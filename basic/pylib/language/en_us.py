@@ -1,0 +1,43 @@
+AppName = "HCloud for Windows"
+MODESTIP = "Select operating mode: "
+MODES = ["Delete", "Copy", "Move"]
+FROMLOC = "Path of source : "
+TOLOC = "Operating path: "
+FILE = "File"
+FILE_MENU = ["Configure", "Exit"]
+ABOUT = "About"
+ABOUT_APP = ["About PythonExplorer"]
+ABOUT_TEXT = """Version: 1.1.2_Beta 
+Copyright (C) HLHT Studio 2022. 
+This software is prohibited for\nany commercial purpose. """
+SETLOC = "Path setting"
+SETTHREAD = "Thread options"
+USETHREAD = "Enable multi-threaded working"
+THREADNUM = "Threads' number: "
+THREADWARN = "This function is \nstill in the EXPERIMENT \nand may be UNSTABLE."
+START = "Start"
+OK = "OK"
+OPERATING = "Operating"
+FROM = "Path of source"
+TO = "Operating path"
+DONE = "Done"
+SUCCESS_MESSAGE = "Operation success!"
+OKBUTTON = "OK : success"
+LANGS = ["English (US)", "Simplified Chinese"]
+SELECT_LANG = "Select language: "
+LANGS_LITE = ["eng", "chi"]
+TOTAL_USING_TIME = "Total Using Time: "
+FILE_REMAINING = "Files remaining: "
+TIME_REMAINING = "Time remaining: "
+RESTART_NOW = "Need to restart,\nRESTART now?"
+CANCEL_OK = ["CANCEL : danger", "OK : success"]
+EXIT = "Exit"
+SOMETHING_FAILED = "Some files' operation is failed,\nthese files will remain unchanged."
+
+LOCAL = "Local"
+NET_DISK = "Net Disk"
+GRID_VIEW = "Grid view"
+LIST_VIEW = "List view"
+ITEMS = "items"
+PROGRESSES = "Progresses"
+THIS_PC = "This PC"

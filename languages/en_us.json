@@ -1,0 +1,93 @@
+{
+  "default.fullname": "English (United State)",
+  "default.shortname": "en-us",
+
+  "control.ok": "OK",
+  "control.quit": "Quit",
+  "control.close": "Close",
+  "control.previous": "Previous",
+  "control.next": "Next",
+  "control.error": "Error",
+  "control.cancel": "Cancel",
+  "control.choose": "Choose",
+
+  "misc.supported_file": "Support file types",
+
+  "software.name": "HCollection Launcher",
+
+  "server.connect.error": "Internet Error",
+  "server.connect.error_text": "Cannot connect to HCloud server",
+
+  "account.title": "Sign to HCloud Service",
+  "account.microsoft.title": "Login to your Microsoft Account",
+  "account.forget_pass": "Forgot password",
+
+  "account.signin": "Sign in",
+  "account.signin.mail_tip": "Your account email address",
+  "account.signin.password_tip": "Your account password",
+  "account.signin.remember_me": "Remember me",
+  "account.signin.content_error": "Incorrect password \nor account does not exist",
+
+  "account.signup": "Sign up",
+  "account.signup.mail_tip": "Your email address",
+  "account.signup.invite_code": "Your HLHT invitation code",
+  "account.signup.verify": "Verify mail",
+  "account.signup.account_exists": "Account already exists",
+  "account.signup.invalid_code": "Invalid invitation code",
+  "account.signup.mail_verify": "Verify mail",
+  "account.signup.mail_verify.verify": "Verify",
+  "account.signup.mail_verify.verify_code": "Your email verify code",
+  "account.signup.account_name": "Your account name",
+  "account.signup.password": "Your password",
+  "account.signup.check_password": "Check your password again",
+  "account.signup.unavailable_name": "Unavailable account name",
+  "account.signup.create_account": "Create account",
+  "account.signup.not_same_password": "Passwords doesn't the same",
+  "account.signup.too_long_content": "Password or username too long (should less than 24 characters)",
+  "account.signup.registration_failed": "Registration failed",
+  "account.signup.registration_succeed": "Successfully registered",
+  "account.signup.registration_succeed_text": "Successfully registered HLHT account",
+
+  "account.signout": "Log out",
+  "account.upload_avatar": "Upload New Avatar",
+  "account.edit_avatar": "Edit Avatar",
+
+  "account.microsoft.signin_error": "Unknown error during login to the Microsoft account",
+  "account.microsoft.relogin": "Relogin",
+  "account.microsoft.current": "Current bound Microsoft account name: ",
+
+  "main.control.launch": "launch",
+  "main.control.update": "update",
+  "main.control.download": "download",
+  "main.control.stop": "stop",
+  "main.control.notopen": "not open",
+  "main.control.download_j": "download",
+
+  "main.interface.downloading": "Downloading...",
+  "main.interface.sync_mod": "Synchronizing mods...",
+  "main.interface.migrate.title": "Old Minecraft Path",
+  "main.interface.migrate_acc.title": "Input your old Id: ",
+
+  "main.download.extract": "Extracting...",
+  "main.download.start": "Initializing Downloading...",
+  "main.download.game_content": "Game Content",
+  "main.download.mod": "Game Mods",
+
+  "sync.download": "Downloading update",
+  "sync.extract": "Extracting downloaded files",
+  "sync.clean": "Cleaning older mods",
+  "sync.sync_to_mods": "Synchronizing new mods \"{0}\"",
+  "sync.access_denied": "ACCESS DENIED. IS MINECRAFT STILL RUNNING?",
+  "sync.clean_cache": "Cleaning download cache",
+
+  "setting.account": "Account",
+  "setting.account.change_avatar": "Change Avatar",
+  "setting.account.change_name": "Change Nickname",
+  "setting.account.relogin_ms": "Re-login to your Microsoft Account",
+
+  "setting.configure": "Preferences",
+  "setting.configure.language": "Language",
+  "setting.configure.game_path": "Game storage path",
+  "setting.configure.ram": "RAM Distributed",
+  "setting.discord": "Join our Discord"
+}

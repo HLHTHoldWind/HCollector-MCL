@@ -1,0 +1,93 @@
+{
+  "default.fullname": "简体中文",
+  "default.shortname": "zh-cn",
+
+  "control.ok": "确定",
+  "control.quit": "退出",
+  "control.close": "关闭",
+  "control.previous": "上一步",
+  "control.next": "下一步",
+  "control.error": "错误",
+  "control.cancel": "取消",
+  "control.choose": "选择",
+
+  "misc.supported_file": "支持的文件类型",
+
+  "software.name": "HCollection 启动器",
+
+  "server.connect.error": "网络错误",
+  "server.connect.error_text": "无法连接到 HCloud 服务器",
+
+  "account.title": "登录 HCloud 服务",
+  "account.microsoft.title": "登录 Microsoft 账户",
+  "account.forget_pass": "忘记密码",
+
+  "account.signin": "登录",
+  "account.signin.mail_tip": "您的账户电子邮箱",
+  "account.signin.password_tip": "您的账户密码",
+  "account.signin.remember_me": "记住我",
+  "account.signin.content_error": "密码错误或账户不存在",
+
+  "account.signup": "注册",
+  "account.signup.mail_tip": "您的电子邮箱",
+  "account.signup.invite_code": "您的 HLHT 邀请码",
+  "account.signup.verify": "验证邮箱",
+  "account.signup.account_exists": "账户已存在",
+  "account.signup.invalid_code": "无效邀请码",
+  "account.signup.mail_verify": "验证邮箱",
+  "account.signup.mail_verify.verify": "验证",
+  "account.signup.mail_verify.verify_code": "您的邮箱验证码",
+  "account.signup.account_name": "您的账户名称",
+  "account.signup.password": "您的密码",
+  "account.signup.check_password": "再次确认密码",
+  "account.signup.unavailable_name": "账户名称不可用",
+  "account.signup.create_account": "创建账户",
+  "account.signup.not_same_password": "密码不一致",
+  "account.signup.too_long_content": "密码或用户名过长（应少于 24 个字符）",
+  "account.signup.registration_failed": "注册失败",
+  "account.signup.registration_succeed": "注册成功",
+  "account.signup.registration_succeed_text": "HLHT 账户注册成功",
+
+  "account.signout": "退出登录",
+  "account.upload_avatar": "上传新头像",
+  "account.edit_avatar": "编辑头像",
+
+  "account.microsoft.signin_error": "登录 Microsoft 账户时发生未知错误",
+  "account.microsoft.relogin": "重新登录",
+  "account.microsoft.current": "当前绑定的 Microsoft 账户名称：",
+
+  "main.control.launch": "启动",
+  "main.control.update": "更新",
+  "main.control.download": "下载",
+  "main.control.stop": "停止",
+  "main.control.notopen": "未打开",
+  "main.control.download_j": "下载",
+
+  "main.interface.downloading": "下载中...",
+  "main.interface.sync_mod": "同步模组中...",
+  "main.interface.migrate.title": "旧版 Minecraft 路径",
+  "main.interface.migrate_acc.title": "输入您的旧版 ID：",
+
+  "main.download.extract": "解压中...",
+  "main.download.start": "正在初始化下载...",
+  "main.download.game_content": "游戏内容",
+  "main.download.mod": "游戏模组",
+
+  "sync.download": "下载更新中",
+  "sync.extract": "解压已下载文件",
+  "sync.clean": "清理旧模组",
+  "sync.sync_to_mods": "正在同步新模组 \"{0}\"",
+  "sync.access_denied": "访问被拒绝。Minecraft 是否仍在运行？",
+  "sync.clean_cache": "清理下载缓存",
+
+  "setting.account": "账户",
+  "setting.account.change_avatar": "更改头像",
+  "setting.account.change_name": "更改昵称",
+  "setting.account.relogin_ms": "重新登录 Microsoft 账户",
+
+  "setting.configure": "偏好设置",
+  "setting.configure.language": "语言",
+  "setting.configure.game_path": "游戏存储路径",
+  "setting.configure.ram": "分配内存",
+  "setting.discord": "加入我们的 Discord"
+}

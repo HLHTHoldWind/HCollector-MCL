@@ -1,0 +1,54 @@
+﻿version：final_1.0.2
+HLHT_China ©2021
+
+English
+
+hlht_title()print copytright
+
+ivx(num)num: The integer you want to change
+        Accept a int and return this int's Roman numerals form.
+        If this num is not a int, it will not output Error.
+
+class IfvTkinter(master)Some Tkinter(C)'s integration function
+    ·scrollWin(width,height,text,bg='white')
+              width: Scrolledtext's width
+              height: Scrolledtext's height
+              text: The text you want to show
+              bg: Background color
+
+print_lebyle(txt,times)txt: The text you want
+                       times(s): The time will wait until print next letter
+                       Print (txt) and every-letter-print will wait for (times) seconds.
+
+print_e(txt,times,line)txt: The text you want
+                       times: The number of first print
+                       line: Lines
+                       Every line's words will add 1
+
+seasons_colors()Ask the seasons to know what colors peoples like.——Homework
+
+yin_yang (speed,big,small)speed: Drawing speed
+                          big: Big circle's diameter
+                          small: Small circle's diameter
+                          The reserved size is very big
+
+writing(mode,file_name)mode: Write mode. Cover or Add
+                       file_name: The file you want to write
+                       Not to use single best
+                       
+Servant.play_game()Play a math game
+
+python_servant()Python_servant
+                It seems like a voice assistant
+                But it need input string to talk
+
+pythagoras_view()Calculate the Pythagorean with a window
+                 Made by Hold Wind, Latest version: 1.1.1
+                 Support float and irrational
+                 It will create a fill to record
+
+pythagoras_workout(a,b,c)Return a string-tuple
+
+game_wars()A simple game, Made by Andy Long and Hold Wind
+
+game_color()Tic Tac Toe, Made by Andy Long

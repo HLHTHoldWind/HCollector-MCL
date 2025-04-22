@@ -1,0 +1,35 @@
+PythonExploder = "Python文件管理器"
+MODESTIP = "选择操作模式: "
+MODES = ["删除", "复制", "移动"]
+FROMLOC = "源路径: "
+TOLOC = "操作路径: "
+FILE = "文件"
+FILE_MENU = ["配置", "退出"]
+ABOUT = "关于"
+ABOUT_APP = ["关于 PythonExploder"]
+ABOUT_TEXT = """版本: 1.1.2_Beta
+版权所有 (C) HLHT Studio 2022。
+本软件禁止用于任何商业目的。 """
+SETLOC = "路径设置"
+SETTHREAD = "线程选项"
+USETHREAD = "启用多线程工作"
+THREADNUM = "线程数: "
+THREADWARN = "此功能仍在实验中\n可能不稳定。"
+START = "开始"
+OK = "确定"
+OPERATING = "操作中"
+FROM = "源路径"
+TO = "操作路径"
+DONE = "完成"
+SUCCESS_MESSAGE = "操作成功！"
+OKBUTTON = "确定 : success"
+LANGS = ["英语（美国）", "简体中文"]
+SELECT_LANG = "选择语言："
+LANGS_LITE = ["eng", "chi"]
+TOTAL_USING_TIME = "总共用时："
+FILE_REMAINING = "剩余文件："
+TIME_REMAINING = "剩余时间："
+RESTART_NOW = "需要重启软件，现在重启？"
+CANCEL_OK = ["取消 : danger", "确定 : success"]
+EXIT = "退出"
+SOMETHING_FAILED = "一些文件尝试进行操作失败，\n这些文件没有发生任何改变。"
