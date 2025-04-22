@@ -60,8 +60,10 @@
   "main.control.update": "更新",
   "main.control.download": "下载",
   "main.control.stop": "停止",
+  "main.control.stopping": "停止中",
   "main.control.notopen": "未打开",
   "main.control.download_j": "下载",
+  "main.control.logging_in": "登录中",
 
   "main.interface.downloading": "下载中...",
   "main.interface.sync_mod": "同步模组中...",

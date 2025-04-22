@@ -110,7 +110,15 @@ class Launcher:
             "port": SERVER_LIST[name].split(":")[1],
             "quickPlayMultiplayer": SERVER_LIST[name]
         }
+        additional_cmd = ["-XX:+UseG1GC", "-XX:-UseAdaptiveSizePolicy", "-XX:-OmitStackTraceInFastThrow",
+                          "-Djdk.lang.Process.allowAmbiguousCommands=true",
+                          "-Dfml.ignoreInvalidMinecraftCertificates=True",
+                          "-Dfml.ignorePatchDiscrepancies=True",
+                          "-Dlog4j2.formatMsgNoLookups=true"]
         minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(name, self.path, options)
+        for cmd in additional_cmd:
+            minecraft_command.insert(3, cmd)
+        debug(f"Launching Minecraft with options: {minecraft_command}", COLORS.PINK, "LAUNCHER")
         minecraft = subprocess.Popen(minecraft_command, cwd=f"{self.path}\\versions\\{name}")
 
         return minecraft

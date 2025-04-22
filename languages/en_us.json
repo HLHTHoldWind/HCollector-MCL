@@ -60,8 +60,10 @@
   "main.control.update": "update",
   "main.control.download": "download",
   "main.control.stop": "stop",
+  "main.control.stopping": "stopping",
   "main.control.notopen": "not open",
   "main.control.download_j": "download",
+  "main.control.logging_in": "Logging in",
 
   "main.interface.downloading": "Downloading...",
   "main.interface.sync_mod": "Synchronizing mods...",

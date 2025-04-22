@@ -53,9 +53,10 @@ import socket
 import zipfile
 import copy
 import webbrowser
+import minecraft_launcher_lib
 from pynput import mouse as mouse_l
 from PIL import Image, ImageTk, ImageSequence
-# from httpcore import SyncHTTPProxy
+from httpcore import SyncHTTPProxy
 
 # import addition
 import basic.git_requests.requests as git_re
@@ -72,7 +73,8 @@ from basic.constants import *
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 ZOOM = round((winapi.GetSystemMetrics(0) / trueWidth) + (0.1 * ((winapi.GetSystemMetrics(0) / trueWidth) / 2)), 1)
 darwin = sys.platform == 'darwin'
-REFRESH_RATE = getattr(win32api.EnumDisplaySettings(win32api.EnumDisplayDevices().DeviceName, -1),
+REFRESH_RATE = 120 if getattr(win32api.EnumDisplaySettings(win32api.EnumDisplayDevices().DeviceName, -1),
+                       'DisplayFrequency') > 120 else getattr(win32api.EnumDisplaySettings(win32api.EnumDisplayDevices().DeviceName, -1),
                        'DisplayFrequency')  # sync
 
 LOCK = threading.Lock()
@@ -86,17 +88,22 @@ FOREGROUND_D = "#ffffff"
 
 LANG = load_lang()
 
-# proxies = urllib.request.getproxies()
-#
-# h_address = proxies["http"]
-#
-# head = h_address.split("//")[0].rstrip(":")
-# a_p = h_address.split("//")[1]
-# address = a_p.split(":")[0]
-# port = a_p.split(":")[1]
-#
-# http_proxy = SyncHTTPProxy((head.encode(), address.encode(), int(port), b''))
-# proxies = {'http': http_proxy, 'https': http_proxy}
+try:
+
+    proxies = urllib.request.getproxies()
+
+    h_address = proxies["http"]
+
+    head = h_address.split("//")[0].rstrip(":")
+    a_p = h_address.split("//")[1]
+    address = a_p.split(":")[0]
+    port = a_p.split(":")[1]
+
+    http_proxy = SyncHTTPProxy((head.encode(), address.encode(), int(port), b''))
+    proxies = {'http': http_proxy, 'https': http_proxy}
+
+except:
+    pass
 
 
 class StoppableThread(Thread):
@@ -457,13 +464,13 @@ class MainWindow(Window):
         global BACKGROUND_C, FOREGROUND_C, BACKGROUND_D, FOREGROUND_D
         Window.__init__(self, themename="windows_dark")
         self.withdraw()
-        self.drew = MainViewClass(self)
+        self.drawn = MainViewClass(self)
         self.views = {}
         self.textable = {}
-        self.drew.place(x=0, y=0, width=0, height=0)
+        self.drawn.place(x=0, y=0, width=0, height=0)
         self.Style = Style("windows_dark")
         self.account = User("", 0, "", "", "")
-        self.ms_account = MS_User("", "", "")
+        self.ms_account = MS_User("", "", "", "")
         self.title_now = ""
         BACKGROUND_C = self.Style.colors.get("link")
         FOREGROUND_C = self.Style.colors.get_foreground("link")
@@ -473,10 +480,10 @@ class MainWindow(Window):
 
     def change_view(self, view: str):
         # self.withdraw()
-        self.drew.withdraw()
+        self.drawn.withdraw()
         time.sleep(0.5)
         self.views[view].draw()
-        self.drew = self.views[view]
+        self.drawn = self.views[view]
 
     def destroy_view(self, view: str):
         self.views[view].withdraw(after="d")
@@ -888,6 +895,7 @@ class MainAppView(MainViewClass):
         self.inset_pro = False
         self.is_account = False
         self.is_preference = False
+        self.background_p = None
         self.now_download = ""
         self.speed_timer = 0
         self.speed_time = 0
@@ -1085,6 +1093,7 @@ class MainAppView(MainViewClass):
 
         self.Style = Style()
         self.Style.configure("bold.primary.TButton", font=("Arial", "15", "bold"))
+        self.Style.configure("bold.danger.TButton", font=("Arial", "15", "bold"))
         self.Style.configure("bold.primary.Inverse.TLabel", font=("Arial", "9", "bold"))
         self.Style.configure("side.light.Link.TButton", relief="flat", font=("Arial", 15, "bold"),
                              anchor="w", compound="left", justify="left")
@@ -1173,19 +1182,25 @@ class MainAppView(MainViewClass):
         widget.move_to(self, x=0, y=0, width=zoom(600), height=zoom(400), fps=REFRESH_RATE)
         Thread(target=self.start_animation).start()
         self.avatar_frame.place(x=0, y=zoom(400), width=zoom(600), height=0)
+        debug("Main Frame Drawn", COLORS.CYAN, "GUI")
 
     def open_setting(self):
         self.is_setting = True
         self.inset_pro = True
+        if not self.is_account and not self.is_preference:
+            self.is_account = True
         light = 0.9
         widget.move_to(self.server_frame, x=0, y=0, width=zoom(0), height=zoom(300), fps=REFRESH_RATE)
-        widget.fade_out(self.launch_btn, light=light, fps=REFRESH_RATE)
+        if not self.is_download:
+            widget.fade_out(self.launch_btn, light=light, fps=REFRESH_RATE)
         time.sleep(0.5)
         widget.move_to(self.set_side_frame, x=0, y=0, width=zoom(200), height=zoom(300), fps=REFRESH_RATE)
         widget.move_to(self.topbar, x=0, y=0, width=zoom(600), height=zoom(400), fps=REFRESH_RATE)
         time.sleep(0.5)
-        self.inset_pro = False
-        self.open_account_set()
+        if self.is_account:
+            self.open_account_set()
+        else:
+            self.open_preference()
         time.sleep(0.5)
 
     def close_setting(self):
@@ -1194,15 +1209,16 @@ class MainAppView(MainViewClass):
         light = 0.9
         if self.is_account:
             self.close_account_set()
+            time.sleep(0.5)
         elif self.is_preference:
             self.close_preference()
         self.inset_pro = True
-        time.sleep(0.5)
         widget.move_to(self.set_side_frame, x=0, y=0, width=zoom(0), height=zoom(300), fps=REFRESH_RATE)
         widget.move_to(self.topbar, x=0, y=0, width=zoom(600), height=zoom(50), fps=REFRESH_RATE)
         time.sleep(0.5)
         widget.move_to(self.server_frame, x=0, y=0, width=zoom(200), height=zoom(300), fps=REFRESH_RATE)
-        widget.fade_in(self.launch_btn, light=light, fps=REFRESH_RATE)
+        if not self.is_download:
+            widget.fade_in(self.launch_btn, light=light, fps=REFRESH_RATE)
         time.sleep(0.5)
         self.inset_pro = False
 
@@ -1211,7 +1227,7 @@ class MainAppView(MainViewClass):
         self.is_account = True
         if self.is_preference:
             self.close_preference()
-            time.sleep(0.5)
+            self.is_preference = False
         widget.move_to(self.account_frame, x=zoom(400), y=zoom(50), width=zoom(200), height=zoom(50),
                        fps=REFRESH_RATE, delay=0.25)
         time.sleep(0.25)
@@ -1225,7 +1241,6 @@ class MainAppView(MainViewClass):
 
     def close_account_set(self):
         self.inset_pro = True
-        self.is_account = False
         widget.fade_out(self.acc_re_ms_btn, fps=REFRESH_RATE)
         widget.fade_out(self.acc_change_avatar, fps=REFRESH_RATE)
         widget.move_to(self.account_frame, x=zoom(400), y=zoom(50), width=zoom(200), height=zoom(50),
@@ -1251,10 +1266,12 @@ class MainAppView(MainViewClass):
     def open_preference(self):
         self.is_preference = True
         self.inset_pro = True
+
         if self.is_account:
             self.close_account_set()
-        elif self.is_preference:
-            self.close_preference()
+            self.is_account = False
+        # elif self.is_preference:
+        #     self.close_preference()
 
         time.sleep(0.5)
         self.prefen_frame.place(x=zoom(200), y=zoom(50), width=zoom(400), height=zoom(350))
@@ -1263,7 +1280,6 @@ class MainAppView(MainViewClass):
 
     def close_preference(self):
         self.inset_pro = True
-        self.is_preference = False
         widget.fade_out(self.prefen_frame, fps=REFRESH_RATE)
         time.sleep(0.5)
         self.prefen_frame.place_forget()
@@ -1301,11 +1317,11 @@ class MainAppView(MainViewClass):
 
     def migrate_account(self):
         time.sleep(0.05)
+        self.migrate_entry.configure(text=self.ms_account.name)
         widget.move_to(self.migrate_frame, x=zoom(200), y=zoom(112), width=zoom(200), height=zoom(75), fps=REFRESH_RATE)
 
     def close_migrate(self):
         self.focus_set()
-        self.migrate_entry.configure(text=self.ms_account.name)
         widget.move_to(self.migrate_frame, x=zoom(125), y=zoom(375), width=zoom(0), height=zoom(0),
                        fps=REFRESH_RATE, after_functions=[self.migrate_frame.place_forget])
 
@@ -1508,7 +1524,10 @@ class MainAppView(MainViewClass):
 
     def get_server_state(self):
         nogame = False
-        if not self.launcher.available_versions[self.server_select].available:
+        debug(f"Getting Server Status", COLORS.CYAN, "GUI")
+        if self.ms_account.token == "":
+            self.stat = "logging_in"
+        elif not self.launcher.available_versions[self.server_select].available:
             self.stat = "download"
             nogame = True
         elif not os.path.exists(f"{RUN_PATH}\\java\\jdk-21"):
@@ -1551,6 +1570,8 @@ class MainAppView(MainViewClass):
         if self.stat == "stop":
             if self.minecraft is not None:
                 self.minecraft.kill()
+        if self.stat == "close":
+            Thread(target=self.close_console).start()
 
     def _download_listener(self, blocknum, bs, size):
         if self.speed_time == 0:
@@ -1719,6 +1740,7 @@ class MainAppView(MainViewClass):
         # self.extractor(f"{TEMP_PATH}\\hdisc.zip", f"{path_h}\\mods", mod=True)
 
     def update_console(self, function_frame: OutputFrame):
+        self.launch_btn.configure(style="bold.danger.TButton")
         self.console.console.destroy()
         self.console.console = ScrollText(master=self.console)
         self.console.console["state"] = "disabled"
@@ -1729,6 +1751,7 @@ class MainAppView(MainViewClass):
                                        insertbackground="#ffffff",
                                        highlightcolor="#ffffff", font=("consolas", 9))
         path = config_ini['CONFIG']['game_path'] + f"\\versions\\{self.server_select}\\logs"
+        old_logs = get_logs(path)
         os.makedirs(path, exist_ok=True)
         open(f"{path}\\latest.log", "w").close()
         pywinstyles.set_opacity(self.console, value=1)
@@ -1742,13 +1765,16 @@ class MainAppView(MainViewClass):
             print('minecraft ended')
             return 0
         self.console.console.delete("1.0", "end")
+        rest = []
         while self.minecraft.poll() is None:
             try:
                 update_list, updated = self.check_con_update(contents)
                 if updated:
 
                     index = 0
+                    updated_list = []
                     for i in update_list:
+                        updated_list.append(i)
                         if not self.minecraft.poll() is None:
                             break
                         if index > len(contents) - 1:
@@ -1758,13 +1784,63 @@ class MainAppView(MainViewClass):
                         index += 1
                         function_frame.console.cyview("end")
 
-                    contents = update_list
+                    contents = updated_list
+                    rest = []
+                    if updated_list != update_list:
+                        rest = update_list[len(updated_list):]
 
                     function_frame.console.cyview("end")
             except:
                 pass
             time.sleep(0.05)
-        print('minecraft ended')
+
+        new_logs = get_logs(path)
+        debug('Minecraft ended', COLORS.ERROR, "LAUNCHER")
+        self.launch_btn.configure(style="bold.primary.TButton")
+        self.stat = "stopping"
+        self.set_button()
+        condition = True
+        if new_logs != old_logs:
+            condition = False
+
+        name = f"{path}\\latest.log"
+        with open(name) as l_f:
+            log_content = l_f.read()
+        if "Unreported exception thrown" in log_content:
+            condition = False
+        if condition:
+            widget.move_to(self.console, x=zoom(600 - 200 - 25), y=zoom(400 - 50 - 25),
+                           width=zoom(200), height=zoom(50), fps=REFRESH_RATE)
+            time.sleep(0.5)
+            widget.fade_out(self.console, 1, fps=REFRESH_RATE)
+            time.sleep(1)
+            self.console.place_forget()
+            self.stat = "launch"
+            self.minecraft = None
+            self.set_button()
+        else:
+            with open(name) as l_f:
+                log_content = l_f.readlines()
+            rest = []
+            start_add = False
+            for line in log_content:
+                if "Unreported exception thrown" in line:
+                    start_add = True
+                if start_add:
+                    rest.append(line)
+                    # print(line)
+                    # print(contents)
+            for i in rest:
+                contents.append(i)
+                function_frame.addline(i)
+                function_frame.console.cyview("end")
+
+            function_frame.console.cyview("end")
+            self.stat = "close"
+            self.minecraft = None
+            self.set_button()
+
+    def close_console(self):
         widget.move_to(self.console, x=zoom(600 - 200 - 25), y=zoom(400 - 50 - 25),
                        width=zoom(200), height=zoom(50), fps=REFRESH_RATE)
         time.sleep(0.5)
@@ -1839,8 +1915,13 @@ class MainAppView(MainViewClass):
         self.is_download = False
 
     def launch(self):
+        text = "Try to launch Minecraft using userdata (Name: {0}) (UUID: {1}) (Token: {2})".format(
+            self.ms_account.name, self.ms_account.uuid, self.ms_account.token
+        )
+        debug(text, COLORS.PINK, "LAUNCHER")
         if "" in [self.ms_account.name, self.ms_account.uuid, self.ms_account.token]:
-            self.get_ms_info()
+            # self.get_ms_info()
+            debug("Login to Microsoft Account First!", COLORS.ERROR, "LAUNCHER")
         else:
             self.minecraft = self.launcher.launch(self.server_select, self.ms_account, 16 * 1024)
             Thread(target=self.update_console, args=(self.console,)).start()
@@ -1876,8 +1957,10 @@ class MainAppView(MainViewClass):
         time.sleep(0.5)
         self.change_title()
         self.set_button()
-        time.sleep(3)
+        self.is_pause = True
         Thread(target=self.background_loop).start()
+        time.sleep(3)
+        self.is_pause = False
 
     def close(self, event=None):
         self.is_alive = False
@@ -1887,12 +1970,20 @@ class MainAppView(MainViewClass):
     def set_button(self, event=None):
         if self.server_select == "Crossline":
             self.stat = "notopen"
-        self.launch_btn.configure(text=LANG[f"main.control.{self.stat}"].upper())
+        if self.stat == "close":
+            self.launch_btn.configure(text=LANG["control.close"].upper())
+        else:
+            self.launch_btn.configure(text=LANG[f"main.control.{self.stat}"].upper())
 
     def background_loop(self):
         light = 0.5
         while self.is_alive:
-            img = random.choice(self.server_backgrounds[self.server_list.index(self.server_select)])
+            while True:
+                img = random.choice(self.server_backgrounds[self.server_list.index(self.server_select)])
+                if self.background_p == img:
+                    continue
+                self.background_p = img
+                break
             if self.is_pause:
                 light = light
                 self.is_pause = False
@@ -1941,6 +2032,7 @@ class MainAppView(MainViewClass):
 
     def set_background(self):
         img = random.choice(self.server_backgrounds[self.server_list.index(self.server_select)])
+        self.background_p = img
         self.background.delete("all")
         self.background.create_image(0, 0, image=img, anchor="nw")
 
@@ -1982,7 +2074,7 @@ class MainAppView(MainViewClass):
             if content == "no_msaccount":
                 return 1
             data = NCE.decryption_key(content, SALT)
-            name, uid, token = data.split(SEPARATOR)
+            name, uid, token, r_token = data.split(SEPARATOR)
 
             end = time.time()
 
@@ -1991,13 +2083,44 @@ class MainAppView(MainViewClass):
 
             self.ms_account.name = name
             self.ms_account.uuid = uid
-            self.ms_account.token = token
-
+            # self.ms_account.token = token
+            self.ms_account.r_token = r_token
+            new_login_data = minecraft_launcher_lib.microsoft_account.complete_refresh(
+                client_id=CLIENT_ID, refresh_token=r_token, client_secret=None, redirect_uri=None)
+            self.upload_ms_info(name,
+                                uid,
+                                new_login_data['access_token'],
+                                new_login_data['refresh_token'])
+            self.ms_account.token = new_login_data['access_token']
+            self.ms_account.r_token = new_login_data['refresh_token']
+            debug("Successfully Logged into Microsoft Account", COLORS.SUCCESS, "BACKGROUND")
+            self.get_server_state()
         else:
             end = time.time()
 
             if end - start_time < 0.75:
                 time.sleep(0.75 - (end - start_time))
+
+    def upload_ms_info(self, name, uid, token, r_token):
+        _socket = self.connect_server()
+        _socket.sendall(f"modify_ms{SEPARATOR}{GENERAL_AUTH}".encode())
+        _socket.recv(BUFFER_SIZE)
+        mail_add = self._master.account.email
+        password = self._master.account.password
+
+        S = SEPARATOR
+
+        message = f"{mail_add}{S}{covert_password(password)}{S}{name}{S}{uid}{S}{token}{S}{r_token}"
+
+        content = NCE.encryption_key(message, SALT)
+        _socket.sendall(content.encode())
+
+        state = _socket.recv(BUFFER_SIZE).decode()
+        if state == "success_sign":
+            return 0
+
+        else:
+            return 1
 
 
 # Microsoft bind
@@ -2031,6 +2154,7 @@ class MicrosoftBind(MainViewClass):
         # darkWindow(self._master)
         # self.webPanel.show()
         self.login_to_microsoft()
+        debug("MS Frame Drawn", COLORS.CYAN, "GUI")
         # self._master.appear()
 
     def back_main(self):
@@ -2059,10 +2183,8 @@ class MicrosoftBind(MainViewClass):
                              buttonCommands=os._exit)
             msg.show()
         else:
-            _content = f"{data['name']}\n{data['id']}\n{data['access_token']}"
-            with open(USER_CONFIG_MS, "w") as _file:
-                _file.write(_content)
-            self.upload_ms_info(data['name'], data['id'], data['access_token'])
+            _content = f"{data['name']}\n{data['id']}\n{data['access_token']}\n{data['refresh_token']}"
+            self.upload_ms_info(data['name'], data['id'], data['access_token'], data['refresh_token'])
             self._master.change_view("main_view")
 
     def connect_server(self):
@@ -2085,7 +2207,7 @@ class MicrosoftBind(MainViewClass):
             self.mainloop()
         return server
 
-    def upload_ms_info(self, name, uid, token):
+    def upload_ms_info(self, name, uid, token, r_token):
         _socket = self.connect_server()
         _socket.sendall(f"modify_ms{SEPARATOR}{GENERAL_AUTH}".encode())
         _socket.recv(BUFFER_SIZE)
@@ -2094,7 +2216,7 @@ class MicrosoftBind(MainViewClass):
 
         S = SEPARATOR
 
-        message = f"{mail_add}{S}{covert_password(password)}{S}{name}{S}{uid}{S}{token}"
+        message = f"{mail_add}{S}{covert_password(password)}{S}{name}{S}{uid}{S}{token}{S}{r_token}"
 
         content = NCE.encryption_key(message, SALT)
         _socket.sendall(content.encode())
@@ -2179,6 +2301,8 @@ class AccountView(MainViewClass):
 
             Thread(target=_IS).start()
 
+        debug("Account Frame Drawn", COLORS.CYAN, "GUI")
+
     def withdraw(self, after="f"):
         func = self.place_forget if after == "f" else self.destroy
         widget.withdraw(self, fps=REFRESH_RATE, after_funtions=[func], direction="s")
@@ -2256,6 +2380,7 @@ class AccountView(MainViewClass):
         # time.sleep(3)
 
     def signed_in(self, event=None):
+        debug("Signed in", COLORS.CYAN, "GUI-ACC")
         global user_ini
         # self._master.withdraw()
         user_ini["USER"]["mail"] = self.sign_in.mail_entry.get()
@@ -2273,9 +2398,11 @@ class AccountView(MainViewClass):
         self.title_animate.stop()
 
         print("avatar path", self._master.account.avatar)
+        debug("Login closed", COLORS.CYAN, "GUI-ACC")
         self._master.back_main()
 
     def _get_avatar_and_continue(self):
+        debug("Getting avatar", COLORS.CYAN, "GUI-ACC")
         self._get_avatar()  # fetch the image (blocking, but in background)
         self.run_main = True
 
@@ -2883,6 +3010,16 @@ def get_server_name(address):
     details = _socket.recv(BUFFER_SIZE).decode()
     name = details[0]
     return name
+
+
+def get_logs(path):
+    files = os.listdir(path)
+    logs = []
+    for _file in files:
+        if _file.endswith(".log.gz"):
+            logs.append(_file)
+
+    return logs
 
 
 def get_online_servers():

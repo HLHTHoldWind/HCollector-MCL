@@ -1,3 +1,5 @@
+import time
+
 import ctypes
 import locale
 import os
@@ -117,10 +119,11 @@ class User:
 
 class MS_User:
 
-    def __init__(self, name, uuid, token):
+    def __init__(self, name, uuid, token, r_token):
         self.name = name
         self.uuid = uuid
         self.token = token
+        self.r_token = r_token
         self.state = False
 
 
@@ -239,6 +242,19 @@ def init_config():
             }
             config_ini.write(file)
     CONFIG.read(CONFIG_PATH)
+
+
+def debug(text, style=COLORS.NONE, host="TEST"):
+    timestamp = time.localtime(time.time())
+    time_y = str(timestamp.tm_year)
+    time_M = str(timestamp.tm_mon)
+    time_d = str(timestamp.tm_mday)
+    time_h = str(timestamp.tm_hour).rjust(2, '0')
+    time_m = str(timestamp.tm_min).rjust(2, '0')
+    time_s = str(timestamp.tm_sec).rjust(2, '0')
+    date_text = f"{time_y}/{time_M}/{time_d}"
+    time_text = f"{time_h}:{time_m}:{time_s}"
+    print(f"{style.color}[{date_text} {time_text}] [{host}|{style.name}] {text}{COLORS.NONE.color}")
 
 
 def test_config():
