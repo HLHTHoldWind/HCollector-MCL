@@ -1,6 +1,7 @@
 import time
 import ctypes
 import locale
+import logging
 import os
 import configparser
 import json
@@ -9,7 +10,7 @@ import re
 import psutil
 from basic import NCE
 
-MAIN_VERSION = 122
+MAIN_VERSION = 123
 
 WORK_PATH = RUN_PATH = os.getcwd()
 USER_PATH = os.path.expanduser('~')
@@ -41,6 +42,22 @@ UN_AVAILABLE_CHAR = ["\\", "/", ":", "*", "?", "\"", "<", ">", "|"]
 GENERAL_AUTH = "f5b4851d5acc5ab1b11f9646c3802a7b1cc85be8551d4f3ee4bbec2218e89dcd"
 SALT = NCE.encryption_key("HLHT Studios", "3714")
 ACRYLIC = False
+
+log_name = time.time()
+os.makedirs("logs", exist_ok=True)
+log_file_path = f'{RUN_PATH}\\logs\\log_{str(log_name).replace(".", "_")}.log'
+LOGGER = logging.getLogger("[HCollector]")
+LOGGER.propagate = False
+LOGGER.setLevel(logging.DEBUG)
+fh = logging.FileHandler(log_file_path, mode='w')
+fh.setLevel(logging.DEBUG)
+
+# Create formatter and add it to the handler
+formatter = logging.Formatter('%(name)s [%(levelname)s]: %(message)s ')
+fh.setFormatter(formatter)
+
+# Add the handler to the logger
+LOGGER.addHandler(fh)
 
 SERVER_LIST = {"HCollection": "qwq.hlhtstudios.com:37140",
                "Crossline": "qwq.hlhtstudios.com:19132"}
@@ -77,6 +94,19 @@ for char in range(J2_START, J2_END + 1):
 
 for char in range(R_START, R_END + 1):
     R_LIST.append(chr(char))
+
+
+def create_log_time():
+    timestamp = time.localtime(time.time())
+    time_y = str(timestamp.tm_year)
+    time_M = str(timestamp.tm_mon)
+    time_d = str(timestamp.tm_mday)
+    time_h = str(timestamp.tm_hour).rjust(2, '0')
+    time_m = str(timestamp.tm_min).rjust(2, '0')
+    time_s = str(timestamp.tm_sec).rjust(2, '0')
+    date_text = f"{time_y}/{time_M}/{time_d}"
+    time_text = f"{time_h}:{time_m}:{time_s}"
+    return f"[{date_text} {time_text}]"
 
 
 class Color:
@@ -255,6 +285,16 @@ def debug(text, style=COLORS.NONE, host="TEST"):
     date_text = f"{time_y}/{time_M}/{time_d}"
     time_text = f"{time_h}:{time_m}:{time_s}"
     print(f"{style.color}[{date_text} {time_text}] [{host}|{style.name}] {text}{COLORS.NONE.color}")
+    if style == COLORS.ERROR:
+        LOGGER.error(f"[{date_text} {time_text}] [{host}|{style.name}] {text}{COLORS.NONE.color}")
+    elif style == COLORS.WARN:
+        LOGGER.warning(f"[{date_text} {time_text}] [{host}|{style.name}] {text}{COLORS.NONE.color}")
+    elif style == COLORS.INFO:
+        LOGGER.info(f"[{date_text} {time_text}] [{host}|{style.name}] {text}{COLORS.NONE.color}")
+    elif style == COLORS.SUCCESS:
+        LOGGER.info(f"[{date_text} {time_text}] [{host}|{style.name}] {text}{COLORS.NONE.color}")
+    else:
+        LOGGER.debug(f"[{date_text} {time_text}] [{host}|{style.name}] {text}{COLORS.NONE.color}")
 
 
 def test_config():

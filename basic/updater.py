@@ -20,6 +20,8 @@ def restart():
         subprocess.Popen([f"{RUN_PATH}\\system\\Python\\pythonw.exe", f"{RUN_PATH}\\main.py"])
         os._exit(114514)  # Immediate process exit, no cleanup
     except Exception as e:
+        exc_cont = f"{create_log_time()}"
+        LOGGER.critical(str(e), exc_cont + " [MAIN]")
         debug(f"Restart failed: {e}", COLORS.ERROR, "MAIN")
 
 

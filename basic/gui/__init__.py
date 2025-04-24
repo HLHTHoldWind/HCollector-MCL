@@ -477,7 +477,7 @@ class MainWindow(Window):
         self.views[name] = _widget
 
     def back_main(self):
-        print(self.views.keys())
+        debug(self.views.keys(), host="GUI")
         if "main_view" in self.views.keys():
             self.change_view("main_view")
 
@@ -1171,6 +1171,7 @@ class MainAppView(MainViewClass):
         Thread(target=self.start_animation).start()
         self.avatar_frame.place(x=0, y=zoom(400), width=zoom(600), height=0)
         debug("Main Frame Drawn", COLORS.CYAN, "GUI")
+        self._master.focus_set()
 
     def open_setting(self):
         self.is_setting = True
@@ -1531,8 +1532,10 @@ class MainAppView(MainViewClass):
 
         try:
             self.launch_btn.configure(text=LANG[f"main.control.{self.stat}"].upper())
-        except RuntimeError:
-            pass
+        except RuntimeError as exception:
+            exc_cont = f"{create_log_time()}"
+            LOGGER.critical(exc_cont+" [GUI] "+str(exception))
+            debug(str(exception), COLORS.ERROR, "GUI")
 
     def check_update(self):
         urllib.request.urlretrieve(f"{ARCHIVE_HOST}/minecraft/hversion.txt",
@@ -1752,7 +1755,7 @@ class MainAppView(MainViewClass):
         widget.move_to(self.console, x=0, y=0, width=zoom(600), height=zoom(400), fps=REFRESH_RATE)
         contents = []
         if self.minecraft is None:
-            print('minecraft ended')
+            debug('Minecraft ended', COLORS.WARN, "LAUNCHER")
             return 0
         self.console.console.delete("1.0", "end")
         rest = []
@@ -1784,20 +1787,23 @@ class MainAppView(MainViewClass):
                 pass
             time.sleep(0.05)
 
-        new_logs = get_logs(path)
-        debug('Minecraft ended', COLORS.ERROR, "LAUNCHER")
+        debug('Minecraft ended', COLORS.WARN, "LAUNCHER")
         self.launch_btn.configure(style="bold.primary.TButton")
         self.stat = "stopping"
         self.set_button()
         condition = True
-        if new_logs != old_logs:
-            condition = False
 
         name = f"{path}\\latest.log"
-        with open(name) as l_f:
-            log_content = l_f.read()
-        if "Unreported exception thrown" in log_content:
-            condition = False
+        try:
+            with open(name) as l_f:
+                log_content = l_f.read()
+            if "Unreported exception thrown" in log_content:
+                debug('Minecraft threw an unreported exception', COLORS.ERROR, "LAUNCHER")
+                condition = False
+        except UnicodeDecodeError as e:
+            debug("Unable to read log file", COLORS.WARN, "LAUNCHER")
+            LOGGER.warning(f"{create_log_time()} [LAUNCHER] Unable to read log file: {e}")
+
         if condition:
             widget.move_to(self.console, x=zoom(600 - 200 - 25), y=zoom(400 - 50 - 25),
                            width=zoom(200), height=zoom(50), fps=REFRESH_RATE)
@@ -2031,7 +2037,10 @@ class MainAppView(MainViewClass):
         server = socket.socket()
         try:
             server.connect((SERVER_HOST, ACCOUNT_PORT))
-        except Exception:
+        except Exception as exception:
+            exc_cont = f"{create_log_time()}"
+            LOGGER.critical(exc_cont+" [MAIN_APP] "+str(exception))
+            debug(f"Unable to connet the server {str(exception)}", COLORS.ERROR, "MAIN_APP")
             error = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\Cross Mark.png")
             error_img = ImageTk.PhotoImage(error.resize((zoom(60), zoom(60))), master=self)
             Image_cache.append(error)
@@ -2162,7 +2171,7 @@ class MicrosoftBind(MainViewClass):
         time.sleep(1)
         data = launcher.login(self.webPanel)
         if data == 1:
-            print("Unknown Error during login")
+            debug("Unknown Error during login", COLORS.ERROR, "MS_LOGIN")
             error = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\Cross Mark.png")
             error_img = ImageTk.PhotoImage(error.resize((zoom(60), zoom(60))))
             Image_cache.append(error)
@@ -2182,7 +2191,10 @@ class MicrosoftBind(MainViewClass):
         server = socket.socket()
         try:
             server.connect((SERVER_HOST, ACCOUNT_PORT))
-        except Exception:
+        except Exception as exception:
+            exc_cont = f"{create_log_time()}"
+            LOGGER.critical(exc_cont+" [MS_LOGIN] "+str(exception))
+            debug(f"Unable to connet the server {str(exception)}", COLORS.ERROR, "MS_LOGIN")
             error = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\Cross Mark.png")
             error_img = ImageTk.PhotoImage(error.resize((zoom(60), zoom(60))), master=self)
             Image_cache.append(error)
@@ -2417,7 +2429,10 @@ class AccountView(MainViewClass):
         server = socket.socket()
         try:
             server.connect((SERVER_HOST, ACCOUNT_PORT))
-        except Exception:
+        except Exception as exception:
+            exc_cont = f"{create_log_time()}"
+            LOGGER.critical(exc_cont+" [GUI] "+str(exception))
+            debug(f"Unable to connect the server {str(exception)}", COLORS.ERROR, "GUI")
             error = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\Cross Mark.png")
             error_img = ImageTk.PhotoImage(error.resize((zoom(60), zoom(60))), master=self)
             Image_cache.append(error)
@@ -2477,7 +2492,7 @@ class AccountView(MainViewClass):
 
         self.title_animate.stop()
 
-        print("avatar path", self._master.account.avatar)
+        debug("avatar path: " + self._master.account.avatar, COLORS.CYAN, "GUI-ACC")
         debug("Login closed", COLORS.CYAN, "GUI-ACC")
         self._master.back_main()
 
@@ -2639,7 +2654,7 @@ class SignInFrame(Frame):
 
     def pass_error(self, event=None):
         width = self.winfo_width() - zoom(10)
-        print("passerror")
+        debug("passerror", COLORS.WARN, "LOGIN")
         self.error_tip.place(x=zoom(5), y=zoom(130), width=width, height=zoom(50))
 
     def refresh_all(self, event=None):
@@ -3028,8 +3043,10 @@ class LoadingFrame(Frame):
                     break
                 try:
                     self.label.configure(image=x)
-                except:
-                    pass
+                except Exception as exception:
+                    exc_cont = f"{create_log_time()}"
+                    LOGGER.critical(exc_cont+" [GUI] "+str(exception))
+                    debug(str(exception), COLORS.ERROR, "GUI")
                 if self.stopped:
                     break
                 end = time.time()
@@ -3299,10 +3316,14 @@ def url_size_getter(url):
         else:
             return None
     except urllib.error.URLError as e:
-        print(f"Error accessing URL: {e}")
+        exc_cont = f"{create_log_time()}"
+        LOGGER.critical(exc_cont+" [GUI] "+str(e))
+        debug(f"Error accessing URL: {e}", COLORS.ERROR, "GUI")
         return None
     except Exception as e:
-        print(f"An error occurred: {e}")
+        exc_cont = f"{create_log_time()}"
+        LOGGER.critical(exc_cont+" [GUI] "+str(e))
+        debug(f"An error occurred: {e}", COLORS.ERROR, "GUI")
         return None
 
 
