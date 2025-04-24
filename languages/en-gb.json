@@ -46,6 +46,7 @@
   "account.microsoft.signin_error": "Unknown error during login to the Microsoft account",
   "account.microsoft.relogin": "Re-login",
   "account.microsoft.current": "Current bound Microsoft account name: ",
+  "main.updating": "Updating",
   "main.control.launch": "launch",
   "main.control.update": "update",
   "main.control.download": "download",

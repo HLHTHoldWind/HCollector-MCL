@@ -46,6 +46,7 @@
   "account.microsoft.signin_error": "登入 Microsoft 帳戶時發生未知錯誤",
   "account.microsoft.relogin": "重新登入",
   "account.microsoft.current": "目前綁定的 Microsoft 帳戶名稱：",
+  "main.updating": "更新中",
   "main.control.launch": "啟動",
   "main.control.update": "更新",
   "main.control.download": "下載",

@@ -46,6 +46,7 @@
   "account.microsoft.signin_error": "Lỗi không xác định khi đăng nhập vào tài khoản Microsoft",
   "account.microsoft.relogin": "Đăng nhập lại",
   "account.microsoft.current": "Tài khoản Microsoft hiện tại: ",
+  "main.updating": "Cập nhật xuống",
   "main.control.launch": "Khởi chạy",
   "main.control.update": "Cập nhật",
   "main.control.download": "Tải xuống",

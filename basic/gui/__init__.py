@@ -67,6 +67,7 @@ import basic.pylib.widget as widget
 import basic.launcher as launcher
 from basic.gui.browser import MainFrame, BrowserFrame, NavigationBar
 from basic.constants import *
+from basic.updater import *
 
 # value constants
 "Windows constants"
@@ -87,23 +88,6 @@ BACKGROUND_D = "#000000"
 FOREGROUND_D = "#ffffff"
 
 LANG = load_lang()
-
-try:
-
-    proxies = urllib.request.getproxies()
-
-    h_address = proxies["http"]
-
-    head = h_address.split("//")[0].rstrip(":")
-    a_p = h_address.split("//")[1]
-    address = a_p.split(":")[0]
-    port = a_p.split(":")[1]
-
-    http_proxy = SyncHTTPProxy((head.encode(), address.encode(), int(port), b''))
-    proxies = {'http': http_proxy, 'https': http_proxy}
-
-except:
-    pass
 
 
 class StoppableThread(Thread):
@@ -982,7 +966,7 @@ class MainAppView(MainViewClass):
                                  style="bold.primary.TButton", command=self.operation, takefocus=False)
 
         self._master.textable[self.launch_btn] = f"main.control.{self.stat}"
-        self.progress = Progressbar(self.progressbar, style='Striped.Horizontal.TProgressbar')
+        self.progress = Progressbar(self.progressbar, style='Horizontal.TProgressbar')
         self.progress_status = Label(self.progressbar, style="primary.Inverse.TLabel")
         self.progress_title = Label(self.progressbar, style="primary.Inverse.TLabel")
         self.avatar_frame = Frame(self)
@@ -1028,6 +1012,9 @@ class MainAppView(MainViewClass):
 
         self.discord_btn = Button(self.prefen_frame, text=LANG["setting.discord"], command=self.open_dc_web,
                                   takefocus=False, image=dc_tk, compound="left")
+
+        self.version_tip = Label(self.prefen_frame, text=f"  v{version_formatter(MAIN_VERSION)}", font=("Arial", 8),
+                                 justify="right", anchor="e")
 
         self.ram_controller = Meter(self.prefen_frame,
                                     amounttotal=round(TOTAL_RAM / (1024**3)),
@@ -1168,7 +1155,8 @@ class MainAppView(MainViewClass):
         self.game_path_tip.place(x=0, y=zoom(25), width=zoom(300), height=zoom(25))
         self.game_path_entry.place(x=0, y=zoom(50), width=zoom(300), height=zoom(25))
         self.game_path_btn.place(x=zoom(300), y=zoom(50), width=zoom(100), height=zoom(25))
-        self.discord_btn.place(x=zoom(0), y=zoom(300), width=zoom(400), height=zoom(50))
+        self.version_tip.place(x=zoom(100), y=zoom(335), width=zoom(295), height=zoom(15))
+        self.discord_btn.place(x=zoom(100), y=zoom(290), width=zoom(300), height=zoom(50))
         self.ram_controller.place(x=zoom(100), y=zoom(100), width=zoom(200), height=zoom(200))
         self.ram_controller._draw_base_image()
         self.ram_controller._draw_meter()
@@ -1270,10 +1258,10 @@ class MainAppView(MainViewClass):
         if self.is_account:
             self.close_account_set()
             self.is_account = False
+            time.sleep(0.5)
         # elif self.is_preference:
         #     self.close_preference()
 
-        time.sleep(0.5)
         self.prefen_frame.place(x=zoom(200), y=zoom(50), width=zoom(400), height=zoom(350))
         widget.fade_in(self.prefen_frame, fps=REFRESH_RATE)
         self.inset_pro = False
@@ -1569,6 +1557,8 @@ class MainAppView(MainViewClass):
             Thread(target=self.launch).start()
         if self.stat == "stop":
             if self.minecraft is not None:
+                self.stat = "stopping"
+                self.set_button()
                 self.minecraft.kill()
         if self.stat == "close":
             Thread(target=self.close_console).start()
@@ -2244,7 +2234,8 @@ class AccountView(MainViewClass):
         self.immediately_sign_in = False
         self._master = master
         self._master.add_view("account", self)
-        Frame.__init__(self)
+        self.need_update = False
+        MainViewClass.__init__(self, master)
 
         self.icon = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\account_title.png").resize((zoom(170), zoom(221)))
         self.title_img = ImageTk.PhotoImage(self.icon, master=self)
@@ -2288,20 +2279,109 @@ class AccountView(MainViewClass):
         darkWindow(self._master)
         self.place(x=0, y=0, width=zoom(600), height=zoom(400))
 
-        self.titleLabel.place(x=zoom(65), y=zoom(65), width=zoom(170), height=zoom(221))
-        self.sign_in.place(x=zoom(295), y=zoom(50), width=zoom(260), height=zoom(300))
-        self.title_animate = LoadingFrame(self, loc=(zoom(65), zoom(65), zoom(170), zoom(170)))
-        self.title_animate.run()
+        if not self.need_update:
 
-        self._master.appear()
-        if self.immediately_sign_in:
-            def _IS():
-                time.sleep(1)
-                self.sign_in.sign_in()
+            self.titleLabel.place(x=zoom(65), y=zoom(65), width=zoom(170), height=zoom(221))
+            self.sign_in.place(x=zoom(295), y=zoom(50), width=zoom(260), height=zoom(300))
+            self.title_animate = LoadingFrame(self, loc=(zoom(65), zoom(65), zoom(170), zoom(170)))
+            self.title_animate.run()
 
-            Thread(target=_IS).start()
+            self._master.appear()
+            if self.immediately_sign_in:
+                def _IS():
+                    time.sleep(1)
+                    self.sign_in.sign_in()
 
-        debug("Account Frame Drawn", COLORS.CYAN, "GUI")
+                Thread(target=_IS).start()
+
+            debug("Account Frame Drawn", COLORS.CYAN, "GUI")
+        else:
+            self.titleLabel.place(x=zoom(215), y=zoom(65), width=zoom(170), height=zoom(221))
+            self.title_animate = LoadingFrame(self, loc=(zoom(215), zoom(65), zoom(170), zoom(170)))
+            self.title_animate.run()
+            self._master.appear()
+            Thread(target=self.update_version).start()
+            debug("Starting Update", COLORS.SUCCESS, "GUI")
+
+    def update_version(self):
+        self._master.title(LANG["main.updating"])
+        progress_title = Label(self, text=LANG["main.updating"], font=("Arial", 25, "bold"),
+                               justify="center", anchor="center")
+        progress_bar = Progressbar(self, style='success.Horizontal.TProgressbar')
+        progress_label = Label(self)
+        progress_title.place(x=zoom(50), y=zoom(235), width=zoom(500), height=zoom(70))
+        progress_bar.place(x=zoom(50), y=zoom(295), width=zoom(500))
+        progress_label.place(x=zoom(50), y=zoom(315), width=zoom(500), height=zoom(25))
+        self.updating(progress_bar, progress_label)
+
+    def updating(self, p_bar: Progressbar, p_t: Label):
+        speed_time = 0
+        speed_size = 0
+        speed_timer = 0
+        speed = 0
+
+        def _download_listener(blocknum, bs, size):
+            nonlocal speed_time, speed_size, speed_timer, speed, p_bar, p_t
+            if speed_time == 0:
+                speed_time = time.time()
+
+            def division(x, y):
+                if 0 not in (x, y):
+                    return x / y
+                else:
+                    return 0
+
+            speed_size += bs
+            speed_timer += 1
+
+            if speed_timer > 100:
+                duration = time.time() - speed_time
+                speed_time = 0
+                speed = round(speed_size / (1024 * 1024 * duration) * 8, 2) if duration > 0 else 0
+                speed_size = 0
+                speed_timer = 0
+
+            now_value = min(size, round(blocknum * bs))
+            p_bar["value"] = now_value
+            p_bar["maximum"] = size
+            p_t.configure(text=f"{LANG['main.interface.downloading']}" +
+                               f"{division(now_value, size) * 100:.2f}% {speed} Mbps")
+
+        URL = 'http://archives.hlhtstudios.com:3399/minecraft/main_package.zip'
+        urllib.request.urlretrieve(URL, f"{TEMP_PATH}\\main_package.zip", reporthook=_download_listener)
+
+        def extractor(src, dst, mod=False):
+            nonlocal speed_time, speed_size, speed_timer, speed, p_bar, p_t
+
+            def division(x, y):
+                if 0 not in (x, y):
+                    return x / y
+                else:
+                    return 0
+
+            with zipfile.ZipFile(src, "r") as zip_ref:
+                p_bar["value"] = 0
+                p_bar["maximum"] = len(zip_ref.namelist())
+                for z_file in zip_ref.namelist():
+                    try:
+                        file_path = os.path.join(dst, z_file)
+
+                        # Check if the file already exists
+                        if os.path.exists(file_path) and os.path.isfile(file_path):
+
+                            # Remove the existing file
+                            os.remove(file_path)
+                        zip_ref.extract(member=z_file, path=dst)
+                    except PermissionError:
+                        pass
+
+                    p_bar["value"] += 1
+                    p_t.configure(
+                                  text=LANG['main.download.extract'] +
+                                  f" {division(p_bar['value'], p_bar['maximum']) * 100:.2f}%")
+
+        extractor(f"{TEMP_PATH}\\main_package.zip", RUN_PATH)
+        restart()
 
     def withdraw(self, after="f"):
         func = self.place_forget if after == "f" else self.destroy
@@ -2405,7 +2485,6 @@ class AccountView(MainViewClass):
         debug("Getting avatar", COLORS.CYAN, "GUI-ACC")
         self._get_avatar()  # fetch the image (blocking, but in background)
         self.run_main = True
-
 
     def switch_sign_in(self, event=None):
         self.socket.close()

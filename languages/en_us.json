@@ -56,6 +56,8 @@
   "account.microsoft.relogin": "Relogin",
   "account.microsoft.current": "Current bound Microsoft account name: ",
 
+  "main.updating": "Updating",
+
   "main.control.launch": "launch",
   "main.control.update": "update",
   "main.control.download": "download",

@@ -46,6 +46,7 @@
   "account.microsoft.signin_error": "Microsoft 계정 로그인 중 알 수 없는 오류 발생",
   "account.microsoft.relogin": "다시 로그인",
   "account.microsoft.current": "현재 연결된 Microsoft 계정 이름: ",
+  "main.updating": "업데이트 중",
   "main.control.launch": "실행",
   "main.control.update": "업데이트",
   "main.control.download": "다운로드",

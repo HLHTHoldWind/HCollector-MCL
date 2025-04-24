@@ -1,5 +1,4 @@
 import time
-
 import ctypes
 import locale
 import os
@@ -8,8 +7,9 @@ import json
 import platform
 import re
 import psutil
-
 from basic import NCE
+
+MAIN_VERSION = 122
 
 WORK_PATH = RUN_PATH = os.getcwd()
 USER_PATH = os.path.expanduser('~')

@@ -56,6 +56,8 @@
   "account.microsoft.relogin": "重新登录",
   "account.microsoft.current": "当前绑定的 Microsoft 账户名称：",
 
+  "main.updating": "更新中",
+
   "main.control.launch": "启动",
   "main.control.update": "更新",
   "main.control.download": "下载",

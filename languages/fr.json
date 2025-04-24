@@ -46,6 +46,7 @@
   "account.microsoft.signin_error": "Erreur inconnue lors de la connexion au compte Microsoft",
   "account.microsoft.relogin": "Se reconnecter",
   "account.microsoft.current": "Compte Microsoft actuellement lié : ",
+  "main.updating": "Mise à jour",
   "main.control.launch": "Lancer",
   "main.control.update": "Mettre à jour",
   "main.control.download": "Télécharger",

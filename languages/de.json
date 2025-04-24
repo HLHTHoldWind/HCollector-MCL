@@ -46,6 +46,7 @@
   "account.microsoft.signin_error": "Unbekannter Fehler bei der Anmeldung mit dem Microsoft-Konto",
   "account.microsoft.relogin": "Erneut anmelden",
   "account.microsoft.current": "Aktuell verknüpftes Microsoft-Konto: ",
+  "main.updating": "Aktualisieren",
   "main.control.launch": "Starten",
   "main.control.update": "Aktualisieren",
   "main.control.download": "Herunterladen",
