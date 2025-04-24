@@ -10,7 +10,7 @@ import re
 import psutil
 from basic import NCE
 
-MAIN_VERSION = 123
+MAIN_VERSION = 124
 
 WORK_PATH = RUN_PATH = os.getcwd()
 USER_PATH = os.path.expanduser('~')
