@@ -10,7 +10,7 @@ import re
 import psutil
 from basic import NCE
 
-MAIN_VERSION = 124
+MAIN_VERSION = 130
 
 WORK_PATH = RUN_PATH = os.getcwd()
 USER_PATH = os.path.expanduser('~')
@@ -60,6 +60,7 @@ fh.setFormatter(formatter)
 LOGGER.addHandler(fh)
 
 SERVER_LIST = {"HCollection": "qwq.hlhtstudios.com:37140",
+               "HCoordinateG": "qwq.hlhtstudios.com:14514",
                "Crossline": "qwq.hlhtstudios.com:19132"}
 
 
@@ -309,6 +310,11 @@ def test_config():
 
         if not os.path.exists(config_ini["CONFIG"]["game_path"]):
             os.makedirs(config_ini["CONFIG"]["game_path"], exist_ok=True)
+
+        try:
+            test = config_ini["CONFIG"]["animate"]
+        except KeyError:
+            config_ini["CONFIG"]["animate"] = "WINDOWS11"
 
         if int(config_ini["CONFIG"]["ram"]) > TOTAL_RAM / (1024 ** 2):
             if TOTAL_RAM / (1024 ** 3) <= 8:

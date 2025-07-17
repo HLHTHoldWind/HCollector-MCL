@@ -91,6 +91,7 @@
 
   "setting.configure": "偏好设置",
   "setting.configure.language": "语言",
+  "setting.configure.animate": "动效",
   "setting.configure.game_path": "游戏存储路径",
   "setting.configure.ram": "分配内存",
   "setting.discord": "加入我们的 Discord"

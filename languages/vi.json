@@ -75,6 +75,7 @@
   "setting.account.relogin_ms": "Đăng nhập lại vào tài khoản Microsoft",
   "setting.configure": "Tùy chọn",
   "setting.configure.language": "Ngôn ngữ",
+  "setting.configure.animate": "Hoạt hình",
   "setting.configure.game_path": "Đường dẫn lưu trữ trò chơi",
   "setting.configure.ram": "RAM được phân bổ",
   "setting.discord": "Tham gia Discord của chúng tôi"

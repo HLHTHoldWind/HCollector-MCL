@@ -75,6 +75,7 @@
   "setting.account.relogin_ms": "Microsoft アカウントを再ログイン",
   "setting.configure": "設定",
   "setting.configure.language": "言語",
+  "setting.configure.animate": "アニメーション",
   "setting.configure.game_path": "ゲーム保存パス",
   "setting.configure.ram": "割り当てメモリ",
   "setting.discord": "Discord に参加"

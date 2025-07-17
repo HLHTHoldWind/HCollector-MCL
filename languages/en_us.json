@@ -91,6 +91,7 @@
 
   "setting.configure": "Preferences",
   "setting.configure.language": "Language",
+  "setting.configure.animate": "Animation",
   "setting.configure.game_path": "Game storage path",
   "setting.configure.ram": "RAM Distributed",
   "setting.discord": "Join our Discord"

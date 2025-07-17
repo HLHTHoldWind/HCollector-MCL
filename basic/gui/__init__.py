@@ -75,8 +75,9 @@ ctypes.windll.shcore.SetProcessDpiAwareness(1)
 ZOOM = round((winapi.GetSystemMetrics(0) / trueWidth) + (0.1 * ((winapi.GetSystemMetrics(0) / trueWidth) / 2)), 1)
 darwin = sys.platform == 'darwin'
 REFRESH_RATE = 120 if getattr(win32api.EnumDisplaySettings(win32api.EnumDisplayDevices().DeviceName, -1),
-                       'DisplayFrequency') > 120 else getattr(win32api.EnumDisplaySettings(win32api.EnumDisplayDevices().DeviceName, -1),
-                       'DisplayFrequency')  # sync
+                              'DisplayFrequency') > 120 else getattr(
+    win32api.EnumDisplaySettings(win32api.EnumDisplayDevices().DeviceName, -1),
+    'DisplayFrequency')  # sync
 
 LOCK = threading.Lock()
 Image_cache = []
@@ -88,6 +89,7 @@ BACKGROUND_D = "#000000"
 FOREGROUND_D = "#ffffff"
 
 LANG = load_lang()
+FONT = "Arial"
 
 
 class StoppableThread(Thread):
@@ -284,7 +286,7 @@ class AvatarCropperFrame(Frame):
 
         self.btn_ok.place(x=canvas_width - btn_width - btn_spacing, y=btn_y, width=btn_width)
         self.btn_cancel.place(x=btn_spacing, y=btn_y, width=btn_width)
-        self.place(x=(zoom(600)-canvas_width)//2, y=zoom(10), width=canvas_width, height=zoom(380))
+        self.place(x=(zoom(600) - canvas_width) // 2, y=zoom(10), width=canvas_width, height=zoom(380))
         self.master.place(x=0, y=zoom(400), width=zoom(600), height=0)
         widget.move_to(self.master, x=0, y=0, width=zoom(600), height=zoom(400), fps=REFRESH_RATE)
 
@@ -717,6 +719,7 @@ class AccountFrame(Frame):
         global Image_cache
         Frame.__init__(self, master=master, **kw)
         self.size = size
+        self.image_cache = {}
 
         width, height = size[0:2]
         font_ratio = height / ZOOM / 100
@@ -769,12 +772,12 @@ class AccountFrame(Frame):
         self.avatar.place(x=width - height + zoom(5), y=zoom(5), width=size, height=size)
 
         self.name_label = Label(self, text=username, anchor='e',
-                                font=("Arial", max(round(30 * font_ratio), 1)))
+                                font=(FONT, max(round(30 * font_ratio), 1)))
         self.name_label.place(x=zoom(5), y=zoom(5),
                               width=round(width * 0.75) - round(zoom(25) * font_ratio),
                               height=round(height * 0.67) - zoom(5))
         self.mail_label = Label(self, text=mail_add, anchor='e',
-                                font=("Arial", max(round(14 * font_ratio), 1)))
+                                font=(FONT, max(round(14 * font_ratio), 1)))
         self.mail_label.place(x=zoom(5), y=round(height * 0.67) - round(zoom(10) * font_ratio),
                               width=round(width * 0.75) - round(zoom(25) * font_ratio),
                               height=round(height * 0.33) - zoom(5))
@@ -790,24 +793,30 @@ class AccountFrame(Frame):
 
         size = height - zoom(10)
 
-        img = self.img.resize((size, size))
-        pic = ImageTk.PhotoImage(img)
-        Image_cache.append(pic)
+        # time_trigger = time.time()
+        if size not in self.image_cache:
+            img = self.img.resize((size, size))
+            pic = ImageTk.PhotoImage(img)
+            Image_cache.append(pic)
+            self.image_cache[size] = pic
+        else:
+            pic = self.image_cache[size]
+        # print(f"Image process time: {time.time()-time_trigger}")
 
         self.avatar.configure(image=pic)
 
         self.avatar.place(x=width - height + zoom(5), y=zoom(5), width=size, height=size)
 
         self.name_label.configure(text=self.username, anchor='e',
-                                font=("Arial", max(round(30 * font_ratio), 1)))
+                                  font=(FONT, min(round(30 * font_ratio * 1.333 * ZOOM) * -1, -1)))
         self.name_label.place(x=zoom(5), y=zoom(5),
                               width=round(width * 0.75) - round(zoom(25) * font_ratio),
                               height=round(height * 0.67) - zoom(5))
         self.mail_label.configure(text=self.mail_add, anchor='e',
-                                font=("Arial", max(round(14 * font_ratio), 1)))
+                                  font=(FONT, min(round(14 * font_ratio * 1.333 * ZOOM) * -1, -1)))
         self.mail_label.place(x=zoom(5), y=round(height * 0.67) - round(zoom(10) * font_ratio),
                               width=round(width * 0.75) - round(zoom(25) * font_ratio),
-                              height=round(height * 0.33) - zoom(5))
+                              height=round(height * 0.33))
 
     def _update(self, img_path, username: str, mail_add: str):
         global Image_cache
@@ -891,16 +900,16 @@ class MainAppView(MainViewClass):
         self.ms_account = self._master.ms_account
         Thread(target=self._sign_in_ms_thread).start()
 
-        self.server_list = ["HCollection", "Crossline"]
-        self.server_version = ["1.20.1", "1.21.3"]
+        self.server_list = ["HCollection", "HCoordinateG", "Crossline"]
+        self.server_version = ["1.20.1", "1.20.1", "1.21.3"]
         self.server_select = self.server_list[0]
         self.server_backgrounds = []
         self.server_backgrounds_org = []
         self.launcher = launcher.Launcher(self.server_list)
 
         self.Style = Style()
-        self.Style.configure("bold.primary.TButton", font=("Arial", "15", "bold"))
-        self.Style.configure("side.dark.TButton", relief="flat", font=("Arial", 20, "bold"),
+        self.Style.configure("bold.primary.TButton", font=(FONT, "15", "bold"))
+        self.Style.configure("side.dark.TButton", relief="flat", font=(FONT, 20, "bold"),
                              anchor="w", compound="left", justify="left")
 
         self.background = Canvas(self)
@@ -911,7 +920,7 @@ class MainAppView(MainViewClass):
         self.set_side_frame = Frame(self.sidebar)
         self.prefen_frame = Frame(self.topbar)
         self.acc_set_frame = Frame(self.topbar)
-        self.title_label = Label(self.topbar, font=("Arial", 25, "bold"))
+        self.title_label = Label(self.topbar, font=(FONT, 25, "bold"))
         ms_img = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\microsoft_logo.png").resize((32, 32))
         sync_set_img = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\setting_sync.png").resize((40, 40))
         set_img = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\setting.png").resize((40, 40))
@@ -948,9 +957,9 @@ class MainAppView(MainViewClass):
                                            takefocus=False, compound="left"))
 
         self.migrate_frame = Frame(self)
-        self.migrate_entry = Label(self.migrate_frame, font=("Arial", 10))
+        self.migrate_entry = Label(self.migrate_frame, font=(FONT, 10))
         self.migrate_label = Label(self.migrate_frame, text=LANG["main.interface.migrate_acc.title"],
-                                   font=("Arial", 10))
+                                   font=(FONT, 10))
         self.migrate_close = Button(self.migrate_frame, text=LANG["control.close"], command=self.close_migrate,
                                     takefocus=False)
         self.migrate_ok = Button(self.migrate_frame, text=LANG["control.ok"], command=self.start_migrate,
@@ -985,13 +994,14 @@ class MainAppView(MainViewClass):
         Image_cache.append([acc_tk, wre_tk, exit_tk, dc_tk])
 
         self.account_set_btn = Button(self.set_side_frame,
-                                      text="  "+LANG["setting.account"], image=acc_tk, takefocus=False, compound="left",
+                                      text="  " + LANG["setting.account"], image=acc_tk, takefocus=False,
+                                      compound="left",
                                       command=self.switch_account_set)
         self.wre_set_btn = Button(self.set_side_frame,
-                                  text="  "+LANG["setting.configure"], image=wre_tk, takefocus=False, compound="left",
+                                  text="  " + LANG["setting.configure"], image=wre_tk, takefocus=False, compound="left",
                                   command=self.switch_preference)
         self.logout_btn = Button(self.set_side_frame,
-                                 text="  "+LANG["account.signout"], image=exit_tk, takefocus=False,
+                                 text="  " + LANG["account.signout"], image=exit_tk, takefocus=False,
                                  command=self.logout, compound="left")
 
         self.acc_re_ms_btn = Button(self.acc_set_frame, text=LANG["setting.account.relogin_ms"],
@@ -1000,12 +1010,17 @@ class MainAppView(MainViewClass):
                                         text=LANG["setting.account.change_avatar"], command=self.change_avatar,
                                         takefocus=False)
 
-        self.lang_tip = Label(self.prefen_frame, text=LANG["setting.configure.language"], font=("Arial", 10))
+        self.lang_tip = Label(self.prefen_frame, text=LANG["setting.configure.language"], font=(FONT, 10))
         self.lang_selector = Combobox(self.prefen_frame, state="readonly", values=list(LANG_DICT.keys()))
         self.lang_selector.bind("<<ComboboxSelected>>", self.change_lang)
         self.lang_selector.current(list(LANG_DICT.keys()).index(LANG["default.fullname"]))
 
-        self.game_path_tip = Label(self.prefen_frame, text=LANG["setting.configure.game_path"], font=("Arial", 10))
+        self.animate_tip = Label(self.prefen_frame, text=LANG["setting.configure.animate"], font=(FONT, 10))
+        self.animate_selector = Combobox(self.prefen_frame, state="readonly", values=list(widget.M_FUNC.keys()))
+        self.animate_selector.bind("<<ComboboxSelected>>", self.change_animate)
+        self.animate_selector.current(list(widget.M_FUNC.keys()).index(CONFIG["CONFIG"]["animate"]))
+
+        self.game_path_tip = Label(self.prefen_frame, text=LANG["setting.configure.game_path"], font=(FONT, 10))
         self.game_path_entry = Entry(self.prefen_frame, state="disabled")
         self.game_path_btn = Button(self.prefen_frame, text=LANG["control.choose"], command=self.change_game_path,
                                     takefocus=False)
@@ -1013,16 +1028,16 @@ class MainAppView(MainViewClass):
         self.discord_btn = Button(self.prefen_frame, text=LANG["setting.discord"], command=self.open_dc_web,
                                   takefocus=False, image=dc_tk, compound="left")
 
-        self.version_tip = Label(self.prefen_frame, text=f"  v{version_formatter(MAIN_VERSION)}", font=("Arial", 8),
+        self.version_tip = Label(self.prefen_frame, text=f"  v{version_formatter(MAIN_VERSION)}", font=(FONT, 8),
                                  justify="right", anchor="e")
 
         self.ram_controller = Meter(self.prefen_frame,
-                                    amounttotal=round(TOTAL_RAM / (1024**3)),
-                                    amountused=int(CONFIG["CONFIG"]["ram"])//1024,
+                                    amounttotal=round(TOTAL_RAM / (1024 ** 3)),
+                                    amountused=int(CONFIG["CONFIG"]["ram"]) // 1024,
                                     bootstyle='success.TMeter', textright="G",
                                     subtext=LANG["setting.configure.ram"],
                                     stripethickness=0, interactive=True,
-                                    textfont=("Arial", 20), subtextfont=("Arial", 10))
+                                    textfont=("Arial", 20), subtextfont=("Arial", 12))
 
         self.ram_controller.bind_all("<ButtonRelease-1>", self.set_ram)
 
@@ -1040,11 +1055,31 @@ class MainAppView(MainViewClass):
         self._master.textable[self.acc_re_ms_btn] = "setting.account.relogin_ms"
         self._master.textable[self.acc_change_avatar] = "setting.account.change_avatar"
         self._master.textable[self.lang_tip] = "setting.configure.language"
+        self._master.textable[self.animate_tip] = "setting.configure.animate"
         self._master.textable[self.game_path_tip] = "setting.configure.game_path"
         self._master.textable[self.game_path_btn] = "control.choose"
 
         Thread(target=self.get_server_state).start()
         self.load_backgrounds()
+
+    def is_font_available(self, font_name):
+        available_fonts = font.families()
+        return font_name in available_fonts
+
+    def set_font(self, event=None):
+        global FONT
+        if CONFIG["CONFIG"]["lang"] == "ja":
+            if self.is_font_available("Yu Gothic UI"):
+                FONT = "Yu Gothic UI"
+        elif CONFIG["CONFIG"]["lang"] == "zh_tw":
+            if self.is_font_available("Microsoft JhengHei UI"):
+                FONT = "Microsoft JhengHei UI"
+        elif CONFIG["CONFIG"]["lang"] == "zh_cn":
+            if self.is_font_available("Microsoft YaHei UI"):
+                FONT = "Microsoft YaHei UI"
+        else:
+            FONT = "Arial"
+        debug("Font change to " + FONT, COLORS.INFO, "CONFIG")
 
     def draw(self):
         self.is_alive = True
@@ -1079,14 +1114,14 @@ class MainAppView(MainViewClass):
         # set_transparent_widgets(self.account_frame, 1)
 
         self.Style = Style()
-        self.Style.configure("bold.primary.TButton", font=("Arial", "15", "bold"))
-        self.Style.configure("bold.danger.TButton", font=("Arial", "15", "bold"))
-        self.Style.configure("bold.primary.Inverse.TLabel", font=("Arial", "9", "bold"))
-        self.Style.configure("side.light.Link.TButton", relief="flat", font=("Arial", 15, "bold"),
+        self.Style.configure("bold.primary.TButton", font=(FONT, "15", "bold"))
+        self.Style.configure("bold.danger.TButton", font=(FONT, "15", "bold"))
+        self.Style.configure("bold.primary.Inverse.TLabel", font=(FONT, "9", "bold"))
+        self.Style.configure("side.light.Link.TButton", relief="flat", font=(FONT, 15, "bold"),
                              anchor="w", compound="left", justify="left")
-        self.Style.configure("rside.light.Link.TButton", relief="flat", font=("Arial", 15, "bold"),
+        self.Style.configure("rside.light.Link.TButton", relief="flat", font=(FONT, 15, "bold"),
                              anchor="e", compound="left", justify="left")
-        self.Style.configure("bold.light.Link.TButton", font=("Arial", 15, "bold"), relief="flat")
+        self.Style.configure("bold.light.Link.TButton", font=(FONT, 15, "bold"), relief="flat")
         self.launch_btn.configure(style="bold.primary.TButton")
         self.ms_btn.configure(style="bold.light.Link.TButton")
         self.set_btn.configure(style="bold.light.Link.TButton")
@@ -1152,12 +1187,14 @@ class MainAppView(MainViewClass):
 
         self.lang_tip.place(x=0, y=0, width=zoom(250), height=zoom(25))
         self.lang_selector.place(x=zoom(250), y=0, width=zoom(150), height=zoom(25))
-        self.game_path_tip.place(x=0, y=zoom(25), width=zoom(300), height=zoom(25))
-        self.game_path_entry.place(x=0, y=zoom(50), width=zoom(300), height=zoom(25))
-        self.game_path_btn.place(x=zoom(300), y=zoom(50), width=zoom(100), height=zoom(25))
+        self.animate_tip.place(x=0, y=zoom(25), width=zoom(150), height=zoom(25))
+        self.animate_selector.place(x=zoom(250), y=zoom(26), width=zoom(150), height=zoom(25))
+        self.game_path_tip.place(x=0, y=zoom(51), width=zoom(300), height=zoom(25))
+        self.game_path_entry.place(x=0, y=zoom(75), width=zoom(300), height=zoom(25))
+        self.game_path_btn.place(x=zoom(300), y=zoom(75), width=zoom(100), height=zoom(25))
         self.version_tip.place(x=zoom(100), y=zoom(335), width=zoom(295), height=zoom(15))
-        self.discord_btn.place(x=zoom(100), y=zoom(290), width=zoom(300), height=zoom(50))
-        self.ram_controller.place(x=zoom(100), y=zoom(100), width=zoom(200), height=zoom(200))
+        self.discord_btn.place(x=zoom(100), y=zoom(295), width=zoom(300), height=zoom(50))
+        self.ram_controller.place(x=zoom(100), y=zoom(105), width=zoom(200), height=zoom(200))
         self.ram_controller._draw_base_image()
         self.ram_controller._draw_meter()
 
@@ -1198,6 +1235,7 @@ class MainAppView(MainViewClass):
         light = 0.9
         if self.is_account:
             self.close_account_set()
+            self.inset_pro = True
             time.sleep(0.5)
         elif self.is_preference:
             self.close_preference()
@@ -1217,6 +1255,7 @@ class MainAppView(MainViewClass):
         if self.is_preference:
             self.close_preference()
             self.is_preference = False
+        self.inset_pro = True
         widget.move_to(self.account_frame, x=zoom(400), y=zoom(50), width=zoom(200), height=zoom(50),
                        fps=REFRESH_RATE, delay=0.25)
         time.sleep(0.25)
@@ -1259,10 +1298,11 @@ class MainAppView(MainViewClass):
         if self.is_account:
             self.close_account_set()
             self.is_account = False
+            self.inset_pro = True
             time.sleep(0.5)
         # elif self.is_preference:
         #     self.close_preference()
-
+        self.inset_pro = True
         self.prefen_frame.place(x=zoom(200), y=zoom(50), width=zoom(400), height=zoom(350))
         widget.fade_in(self.prefen_frame, fps=REFRESH_RATE)
         self.inset_pro = False
@@ -1291,7 +1331,7 @@ class MainAppView(MainViewClass):
             with open(CONFIG_PATH, "w") as cf:
                 CONFIG.write(cf)
             self.game_path_entry["state"] = "normal"
-            self.game_path_entry.delete("all")
+            self.game_path_entry.delete(0, "end")
             self.game_path_entry.insert(0, path)
             self.game_path_entry["state"] = "disabled"
 
@@ -1354,16 +1394,56 @@ class MainAppView(MainViewClass):
         LANG = load_lang()
         for i in self._master.textable.keys():
             i.configure(text=LANG[self._master.textable[i]])
+
+        self.set_font()
+        new_font_family = FONT  # The font you want to apply
+
+        for _widget in self._master.textable.keys():
+            # Update text from LANG dictionary
+            try:
+                font_obj = font.Font(font=_widget.cget("font"))
+                # Change only family
+                font_obj.configure(family=new_font_family)
+                _widget.configure(font=font_obj)
+            except tk.TclError as e:
+                # Fallback: ttk widget using style
+                debug(f"{_widget} ---- {e}", COLORS.WARNING, "CONFIG")
+                style_name = _widget.cget("style") or _widget.winfo_class()  # e.g. 'TButton'
+                font_name = self.Style.lookup(style_name, 'font')
+                if not font_name:
+                    continue  # No font set in this style
+
+                try:
+                    font_obj = font.Font(font=font_name)
+                    font_obj.configure(family=new_font_family)
+                    self.Style.configure(style_name, font=font_obj)
+                    _widget.configure(style=style_name)
+                except tk.TclError as _e:
+                    debug(f"Style ---- {_widget} ---- {_e}", COLORS.WARNING, "CONFIG")
         self._master.title_now = LANG["software.name"]
 
         self.account_set_btn.configure(text="  " + LANG["setting.account"])
         self.wre_set_btn.configure(text="  " + LANG["setting.configure"])
         self.logout_btn.configure(text="  " + LANG["account.signout"])
         self.launch_btn.configure(text=LANG["main.control.launch"].upper())
-        self.ram_controller.subtext.configure(text=LANG["setting.configure.ram"])
+        self.ram_controller._subtext = LANG["setting.configure.ram"]
+        self.ram_controller.labelvar.set(LANG["setting.configure.ram"])
+        size = 9 if (CONFIG["CONFIG"]["lang"] == "de") else 12
+        self.ram_controller.subtext.configure(text=LANG["setting.configure.ram"], font=(FONT, size))
         self.ram_controller.subtext.update()
+        self.ram_controller._draw_base_image()
+        self.ram_controller._draw_meter()
 
         self._master.title(self._master.title_now)
+
+    def change_animate(self, event=None, animate=None):
+        self.focus_set()
+        if animate is None:
+            animate = self.animate_selector.get()
+
+        CONFIG["CONFIG"]["animate"] = animate
+        with open(CONFIG_PATH, "w") as cf:
+            CONFIG.write(cf)
 
     def re_login(self):
         self.is_alive = False
@@ -1497,16 +1577,19 @@ class MainAppView(MainViewClass):
         return change_server
 
     def update_server_select(self):
-        Thread(target=self.get_server_state).start()
         if self.server_select == "Crossline":
             self.stat = "notopen"
             self.launch_btn.configure(text=LANG[f"main.control.notopen"].upper())
+        Thread(target=self.get_server_state).start()
         Thread(target=self.set_background_anmiate).start()
         Thread(target=self.change_title).start()
 
     def get_server_update(self):
         if self.check_update():
             self.stat = "update"
+        if not self.launcher.available_versions[self.server_select].available:
+            self.stat = "download"
+            nogame = True
         if self.server_select == "Crossline":
             self.stat = "notopen"
         self.launch_btn.configure(text=LANG[f"main.control.{self.stat}"].upper())
@@ -1534,14 +1617,22 @@ class MainAppView(MainViewClass):
             self.launch_btn.configure(text=LANG[f"main.control.{self.stat}"].upper())
         except RuntimeError as exception:
             exc_cont = f"{create_log_time()}"
-            LOGGER.critical(exc_cont+" [GUI] "+str(exception))
+            LOGGER.critical(exc_cont + " [GUI] " + str(exception))
             debug(str(exception), COLORS.ERROR, "GUI")
 
     def check_update(self):
-        urllib.request.urlretrieve(f"{ARCHIVE_HOST}/minecraft/hversion.txt",
-                                   f"{DATA_PATH}\\temp.txt")
+        target = self.server_select
+
+        if target == self.server_list[0]:
+            urllib.request.urlretrieve(f"{ARCHIVE_HOST}/minecraft/hversion.txt",
+                                       f"{DATA_PATH}\\temp.txt")
+        elif target == self.server_list[1]:
+            urllib.request.urlretrieve(f"{ARCHIVE_HOST}/minecraft/hcgversion.txt",
+                                       f"{DATA_PATH}\\temp.txt")
         with open(f"{DATA_PATH}\\temp.txt", "r") as f:
             version = int(f.readline().strip())
+        print(target)
+        print(self.launcher.available_versions[self.server_select].version, version)
 
         if self.launcher.available_versions[self.server_select].version != version:
             return True
@@ -1618,43 +1709,75 @@ class MainAppView(MainViewClass):
             text=f"{division(self.progress['value'], self.progress['maximum']) * 100:.2f}% {self.speed} Mbps")
 
     def HC_updater(self):
+        target = self.server_select
         URL = f"{ARCHIVE_HOST}/minecraft"
         self.progress["value"] = 0
         self.progress_title.configure(text=f"{LANG['main.download.start']}")
-        size = url_size_getter(f"{URL}/optimization.zip") + url_size_getter(
-            f"{URL}/shader.zip") + url_size_getter(f"{URL}/basic.zip") + url_size_getter(f"{URL}/addon.zip")
-        self.progress["maximum"] = size
-        basic_t = Thread(target=downloader, args=(f"{URL}/basic.zip",
-                                                  f"{TEMP_PATH}\\basic.zip", self._download_listener_t))
-        addon_t = Thread(target=downloader, args=(f"{URL}/addon.zip",
-                                                  f"{TEMP_PATH}\\addon.zip", self._download_listener_t))
-        opt_t = Thread(target=downloader, args=(f"{URL}/optimization.zip",
-                                                f"{TEMP_PATH}\\optimization.zip", self._download_listener_t))
-        shader_t = Thread(target=downloader, args=(f"{URL}/shader.zip",
-                                                   f"{TEMP_PATH}\\shader.zip", self._download_listener_t))
-        # self.now_download = "hdisc"
-        # urllib.request.urlretrieve(f"{URL}/hdisc.zip", f"{TEMP_PATH}\\hdisc.zip", reporthook=self._download_listener)
-        basic_t.start()
-        addon_t.start()
-        opt_t.start()
-        shader_t.start()
-        self.now_download = LANG["main.download.mod"]
-        basic_t.join()
-        addon_t.join()
-        opt_t.join()
-        shader_t.join()
-        os.makedirs(f"{DATA_PATH}\\mods", exist_ok=True)
-        path_h = f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection"
-        for mod in os.listdir(f"{DATA_PATH}\\mods"):
-            if mod.endswith(".jar"):
-                if os.path.exists(f"{path_h}\\mods\\{mod}"):
-                    os.remove(f"{path_h}\\mods\\{mod}")
 
-        self.extractor(f"{TEMP_PATH}\\basic.zip", f"{path_h}\\mods", mod=True)
-        self.extractor(f"{TEMP_PATH}\\addon.zip", f"{path_h}\\mods", mod=True)
-        self.extractor(f"{TEMP_PATH}\\optimization.zip", f"{path_h}\\mods", mod=True)
-        self.extractor(f"{TEMP_PATH}\\shader.zip", f"{path_h}\\mods", mod=True)
-        urllib.request.urlretrieve(f"{URL}/hversion.txt", f"{path_h}\\version.txt", reporthook=self._download_listener)
+        if target == self.server_list[0]:
+            size = url_size_getter(f"{URL}/optimization.zip") + url_size_getter(
+                f"{URL}/shader.zip") + url_size_getter(f"{URL}/basic.zip") + url_size_getter(f"{URL}/addon.zip")
+            self.progress["maximum"] = size
+            basic_t = Thread(target=downloader, args=(f"{URL}/basic.zip",
+                                                      f"{TEMP_PATH}\\basic.zip", self._download_listener_t))
+            addon_t = Thread(target=downloader, args=(f"{URL}/addon.zip",
+                                                      f"{TEMP_PATH}\\addon.zip", self._download_listener_t))
+            opt_t = Thread(target=downloader, args=(f"{URL}/optimization.zip",
+                                                    f"{TEMP_PATH}\\optimization.zip", self._download_listener_t))
+            shader_t = Thread(target=downloader, args=(f"{URL}/shader.zip",
+                                                       f"{TEMP_PATH}\\shader.zip", self._download_listener_t))
+            # self.now_download = "hdisc"
+            # urllib.request.urlretrieve(f"{URL}/hdisc.zip", f"{TEMP_PATH}\\hdisc.zip", reporthook=self._download_listener)
+            basic_t.start()
+            addon_t.start()
+            opt_t.start()
+            shader_t.start()
+            self.now_download = LANG["main.download.mod"]
+            basic_t.join()
+            addon_t.join()
+            opt_t.join()
+            shader_t.join()
+            os.makedirs(f"{DATA_PATH}\\mods", exist_ok=True)
+            path_h = f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection"
+            for mod in os.listdir(f"{DATA_PATH}\\mods"):
+                if mod.endswith(".jar"):
+                    if os.path.exists(f"{path_h}\\mods\\{mod}"):
+                        os.remove(f"{path_h}\\mods\\{mod}")
+
+            self.extractor(f"{TEMP_PATH}\\basic.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\addon.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\optimization.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\shader.zip", f"{path_h}\\mods", mod=True)
+            urllib.request.urlretrieve(f"{URL}/hversion.txt", f"{path_h}\\version.txt",
+                                       reporthook=self._download_listener)
+
+        elif target == self.server_list[1]:
+            size = url_size_getter(f"{URL}/HCGmain.zip") + url_size_getter(
+                f"{URL}/HCGtacz.zip")
+            self.progress["maximum"] = size
+            mod_t = Thread(target=downloader, args=(f"{URL}/HCGmain.zip",
+                                                    f"{TEMP_PATH}\\HCGmain.zip", self._download_listener_t))
+            tacz_t = Thread(target=downloader, args=(f"{URL}/HCGtacz.zip",
+                                                     f"{TEMP_PATH}\\HCGtacz.zip", self._download_listener_t))
+            # self.now_download = "hdisc"
+            # urllib.request.urlretrieve(f"{URL}/hdisc.zip", f"{TEMP_PATH}\\hdisc.zip", reporthook=self._download_listener)
+            mod_t.start()
+            tacz_t.start()
+            self.now_download = LANG["main.download.mod"]
+            mod_t.join()
+            tacz_t.join()
+            os.makedirs(f"{DATA_PATH}\\mods", exist_ok=True)
+            os.makedirs(f"{DATA_PATH}\\tacz", exist_ok=True)
+            path_h = f"{config_ini['CONFIG']['game_path']}\\versions\\{self.server_list[1]}"
+            for mod in os.listdir(f"{DATA_PATH}\\mods"):
+                if mod.endswith(".jar"):
+                    if os.path.exists(f"{path_h}\\mods\\{mod}"):
+                        os.remove(f"{path_h}\\mods\\{mod}")
+
+            self.extractor(f"{TEMP_PATH}\\HCGmain.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\HCGtacz.zip", f"{path_h}\\tacz")
+            urllib.request.urlretrieve(f"{URL}/hcgversion.txt", f"{path_h}\\version.txt",
+                                       reporthook=self._download_listener)
 
     def JAVA_downloader(self):
         URL = f"{ARCHIVE_HOST}/minecraft"
@@ -1666,6 +1789,7 @@ class MainAppView(MainViewClass):
             self.extractor(f"{TEMP_PATH}\\jdk-21.zip", f"{RUN_PATH}\\java\\jdk-21")
 
     def HC_downloader(self):
+        target = self.server_select
         URL = f"{ARCHIVE_HOST}/minecraft"
         if not os.path.exists(f"{RUN_PATH}\\java"):
             self.JAVA_downloader()
@@ -1673,64 +1797,116 @@ class MainAppView(MainViewClass):
         # game content
         self.progress["value"] = 0
         self.progress_title.configure(text=f"{LANG['main.download.start']}")
-        size = url_size_getter(f"{URL}/assets.zip") + url_size_getter(f"{URL}/libraries.zip") + url_size_getter(
-            f"{URL}/HCollection.zip") + url_size_getter(f"{URL}/optimization.zip") + url_size_getter(
-            f"{URL}/shader.zip") + url_size_getter(f"{URL}/basic.zip") + url_size_getter(f"{URL}/addon.zip")
-        self.progress["maximum"] = size
-        assets_t = Thread(target=downloader, args=(f"{URL}/assets.zip",
-                                                   f"{TEMP_PATH}\\assets.zip", self._download_listener_t))
-        lib_t = Thread(target=downloader, args=(f"{URL}/libraries.zip",
-                                                f"{TEMP_PATH}\\libraries.zip", self._download_listener_t))
-        main_t = Thread(target=downloader, args=(f"{URL}/HCollection.zip",
-                                                 f"{TEMP_PATH}\\HCollection.zip", self._download_listener_t))
-        basic_t = Thread(target=downloader, args=(f"{URL}/basic.zip",
-                                                  f"{TEMP_PATH}\\basic.zip", self._download_listener_t))
-        addon_t = Thread(target=downloader, args=(f"{URL}/addon.zip",
-                                                  f"{TEMP_PATH}\\addon.zip", self._download_listener_t))
-        opt_t = Thread(target=downloader, args=(f"{URL}/optimization.zip",
-                                                f"{TEMP_PATH}\\optimization.zip", self._download_listener_t))
-        shader_t = Thread(target=downloader, args=(f"{URL}/shader.zip",
-                                                   f"{TEMP_PATH}\\shader.zip", self._download_listener_t))
-        assets_t.start()
-        lib_t.start()
-        main_t.start()
-        basic_t.start()
-        addon_t.start()
-        opt_t.start()
-        shader_t.start()
-        self.now_download = LANG["main.download.game_content"]
-        assets_t.join()
-        lib_t.join()
-        main_t.join()
-        basic_t.join()
-        addon_t.join()
-        opt_t.join()
-        shader_t.join()
 
-        # extract part
-        os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection", exist_ok=True)
-        os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection\\config", exist_ok=True)
-        os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection\\mods", exist_ok=True)
-        os.makedirs(f"{DATA_PATH}\\mods", exist_ok=True)
+        if target == self.server_list[0]:
+            size = url_size_getter(f"{URL}/assets.zip") + url_size_getter(f"{URL}/libraries.zip") + url_size_getter(
+                f"{URL}/HCollection.zip") + url_size_getter(f"{URL}/optimization.zip") + url_size_getter(
+                f"{URL}/shader.zip") + url_size_getter(f"{URL}/basic.zip") + url_size_getter(f"{URL}/addon.zip")
+            self.progress["maximum"] = size
+            assets_t = Thread(target=downloader, args=(f"{URL}/assets.zip",
+                                                       f"{TEMP_PATH}\\assets.zip", self._download_listener_t))
+            lib_t = Thread(target=downloader, args=(f"{URL}/libraries.zip",
+                                                    f"{TEMP_PATH}\\libraries.zip", self._download_listener_t))
+            main_t = Thread(target=downloader, args=(f"{URL}/HCollection.zip",
+                                                     f"{TEMP_PATH}\\HCollection.zip", self._download_listener_t))
+            basic_t = Thread(target=downloader, args=(f"{URL}/basic.zip",
+                                                      f"{TEMP_PATH}\\basic.zip", self._download_listener_t))
+            addon_t = Thread(target=downloader, args=(f"{URL}/addon.zip",
+                                                      f"{TEMP_PATH}\\addon.zip", self._download_listener_t))
+            opt_t = Thread(target=downloader, args=(f"{URL}/optimization.zip",
+                                                    f"{TEMP_PATH}\\optimization.zip", self._download_listener_t))
+            shader_t = Thread(target=downloader, args=(f"{URL}/shader.zip",
+                                                       f"{TEMP_PATH}\\shader.zip", self._download_listener_t))
+            assets_t.start()
+            lib_t.start()
+            main_t.start()
+            basic_t.start()
+            addon_t.start()
+            opt_t.start()
+            shader_t.start()
+            self.now_download = LANG["main.download.game_content"]
+            assets_t.join()
+            lib_t.join()
+            main_t.join()
+            basic_t.join()
+            addon_t.join()
+            opt_t.join()
+            shader_t.join()
 
-        path = f"{config_ini['CONFIG']['game_path']}"
-        path_h = f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection"
+            # extract part
+            os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection", exist_ok=True)
+            os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection\\config", exist_ok=True)
+            os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection\\mods", exist_ok=True)
+            os.makedirs(f"{DATA_PATH}\\mods", exist_ok=True)
 
-        self.extractor(f"{TEMP_PATH}\\assets.zip", f"{path}\\assets")
-        self.extractor(f"{TEMP_PATH}\\libraries.zip", f"{path}\\libraries")
-        self.extractor(f"{TEMP_PATH}\\HCollection.zip", path_h)
+            path = f"{config_ini['CONFIG']['game_path']}"
+            path_h = f"{config_ini['CONFIG']['game_path']}\\versions\\HCollection"
 
-        self.extractor(f"{TEMP_PATH}\\basic.zip", f"{path_h}\\mods", mod=True)
-        self.extractor(f"{TEMP_PATH}\\addon.zip", f"{path_h}\\mods", mod=True)
-        self.extractor(f"{TEMP_PATH}\\optimization.zip", f"{path_h}\\mods", mod=True)
-        self.extractor(f"{TEMP_PATH}\\shader.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\assets.zip", f"{path}\\assets")
+            self.extractor(f"{TEMP_PATH}\\libraries.zip", f"{path}\\libraries")
+            self.extractor(f"{TEMP_PATH}\\HCollection.zip", path_h)
 
-        self.now_download = "config"
-        urllib.request.urlretrieve(f"{URL}/createfood.json5", f"{path_h}\\config\\createfood.json5",
-                                   reporthook=self._download_listener)
-        self.now_download = "version"
-        urllib.request.urlretrieve(f"{URL}/hversion.txt", f"{path_h}\\version.txt", reporthook=self._download_listener)
-        # self.extractor(f"{TEMP_PATH}\\hdisc.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\basic.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\addon.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\optimization.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\shader.zip", f"{path_h}\\mods", mod=True)
+
+            self.now_download = "config"
+            urllib.request.urlretrieve(f"{URL}/createfood.json5", f"{path_h}\\config\\createfood.json5",
+                                       reporthook=self._download_listener)
+            self.now_download = "version"
+            urllib.request.urlretrieve(f"{URL}/hversion.txt", f"{path_h}\\version.txt",
+                                       reporthook=self._download_listener)
+            # self.extractor(f"{TEMP_PATH}\\hdisc.zip", f"{path_h}\\mods", mod=True)
+
+        elif target == self.server_list[1]:
+            size = url_size_getter(f"{URL}/HCG.zip") + url_size_getter(f"{URL}/HCGmain.zip") + url_size_getter(
+                f"{URL}/HCGtacz.zip") + url_size_getter(f"{URL}/HCGassets.zip") + url_size_getter(
+                f"{URL}/HCGlibraries.zip")
+            self.progress["maximum"] = size
+            assets_t = Thread(target=downloader, args=(f"{URL}/HCGassets.zip",
+                                                       f"{TEMP_PATH}\\HCGassets.zip", self._download_listener_t))
+            lib_t = Thread(target=downloader, args=(f"{URL}/HCGlibraries.zip",
+                                                    f"{TEMP_PATH}\\HCGlibraries.zip", self._download_listener_t))
+            main_t = Thread(target=downloader, args=(f"{URL}/HCG.zip",
+                                                     f"{TEMP_PATH}\\HCG.zip", self._download_listener_t))
+            tacz_t = Thread(target=downloader, args=(f"{URL}/HCGtacz.zip",
+                                                     f"{TEMP_PATH}\\HCGtacz.zip", self._download_listener_t))
+            mod_t = Thread(target=downloader, args=(f"{URL}/HCGmain.zip",
+                                                    f"{TEMP_PATH}\\HCGmain.zip", self._download_listener_t))
+            assets_t.start()
+            lib_t.start()
+            main_t.start()
+            tacz_t.start()
+            mod_t.start()
+            self.now_download = LANG["main.download.game_content"]
+            assets_t.join()
+            lib_t.join()
+            main_t.join()
+            tacz_t.join()
+            mod_t.join()
+
+            # extract part
+            os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\{self.server_list[1]}", exist_ok=True)
+            os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\{self.server_list[1]}\\config", exist_ok=True)
+            os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\{self.server_list[1]}\\mods", exist_ok=True)
+            os.makedirs(f"{config_ini['CONFIG']['game_path']}\\versions\\{self.server_list[1]}\\tacz", exist_ok=True)
+            os.makedirs(f"{DATA_PATH}\\mods", exist_ok=True)
+
+            path = f"{config_ini['CONFIG']['game_path']}"
+            path_h = f"{config_ini['CONFIG']['game_path']}\\versions\\{self.server_list[1]}"
+
+            self.extractor(f"{TEMP_PATH}\\HCGassets.zip", f"{path}\\assets")
+            self.extractor(f"{TEMP_PATH}\\HCGlibraries.zip", f"{path}\\libraries")
+            self.extractor(f"{TEMP_PATH}\\HCG.zip", path_h)
+
+            self.extractor(f"{TEMP_PATH}\\HCGmain.zip", f"{path_h}\\mods", mod=True)
+            self.extractor(f"{TEMP_PATH}\\HCGtacz.zip", f"{path_h}\\tacz")
+
+            self.now_download = "version"
+            urllib.request.urlretrieve(f"{URL}/hcgversion.txt", f"{path_h}\\version.txt",
+                                       reporthook=self._download_listener)
+            # self.extractor(f"{TEMP_PATH}\\hdisc.zip", f"{path_h}\\mods", mod=True)
 
     def update_console(self, function_frame: OutputFrame):
         self.launch_btn.configure(style="bold.danger.TButton")
@@ -1875,14 +2051,20 @@ class MainAppView(MainViewClass):
             self.progress["value"] = 0
             self.progress["maximum"] = len(zip_ref.namelist())
             for z_file in zip_ref.namelist():
-                zip_ref.extract(member=z_file, path=dst)
                 self.progress["value"] += 1
-                if mod:
-                    shutil.copy(f"{dst}\\{z_file}", f"{DATA_PATH}\\mods")
-                self.progress_title.configure(
-                    text=f"{LANG['main.download.extract']} {os.path.basename(src)} ({self.progress['value']} / {self.progress['maximum']})")
-                self.progress_status.configure(
-                    text=f"{division(self.progress['value'], self.progress['maximum']) * 100:.2f}%")
+                try:
+                    zip_ref.extract(member=z_file, path=dst)
+
+                    if mod:
+                        shutil.copy(f"{dst}\\{z_file}", f"{DATA_PATH}\\mods")
+                    self.progress_title.configure(
+                        text=f"{LANG['main.download.extract']} {os.path.basename(src)} ({self.progress['value']} / {self.progress['maximum']})")
+                    self.progress_status.configure(
+                        text=f"{division(self.progress['value'], self.progress['maximum']) * 100:.2f}%")
+                except Exception as e:
+                    exc_cont = f"{create_log_time()}"
+                    LOGGER.error(exc_cont + " [DOWNLOADER] " + str(e))
+                    debug(f"An error occurred: {e}", COLORS.ERROR, "DOWNLOADER")
 
     def download(self, function):
         self.is_download = True
@@ -2039,7 +2221,7 @@ class MainAppView(MainViewClass):
             server.connect((SERVER_HOST, ACCOUNT_PORT))
         except Exception as exception:
             exc_cont = f"{create_log_time()}"
-            LOGGER.critical(exc_cont+" [MAIN_APP] "+str(exception))
+            LOGGER.critical(exc_cont + " [MAIN_APP] " + str(exception))
             debug(f"Unable to connet the server {str(exception)}", COLORS.ERROR, "MAIN_APP")
             error = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\Cross Mark.png")
             error_img = ImageTk.PhotoImage(error.resize((zoom(60), zoom(60))), master=self)
@@ -2193,7 +2375,7 @@ class MicrosoftBind(MainViewClass):
             server.connect((SERVER_HOST, ACCOUNT_PORT))
         except Exception as exception:
             exc_cont = f"{create_log_time()}"
-            LOGGER.critical(exc_cont+" [MS_LOGIN] "+str(exception))
+            LOGGER.critical(exc_cont + " [MS_LOGIN] " + str(exception))
             debug(f"Unable to connet the server {str(exception)}", COLORS.ERROR, "MS_LOGIN")
             error = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\Cross Mark.png")
             error_img = ImageTk.PhotoImage(error.resize((zoom(60), zoom(60))), master=self)
@@ -2317,7 +2499,7 @@ class AccountView(MainViewClass):
 
     def update_version(self):
         self._master.title(LANG["main.updating"])
-        progress_title = Label(self, text=LANG["main.updating"], font=("Arial", 25, "bold"),
+        progress_title = Label(self, text=LANG["main.updating"], font=(FONT, 25, "bold"),
                                justify="center", anchor="center")
         progress_bar = Progressbar(self, style='success.Horizontal.TProgressbar')
         progress_label = Label(self)
@@ -2380,7 +2562,6 @@ class AccountView(MainViewClass):
 
                         # Check if the file already exists
                         if os.path.exists(file_path) and os.path.isfile(file_path):
-
                             # Remove the existing file
                             os.remove(file_path)
                         zip_ref.extract(member=z_file, path=dst)
@@ -2389,8 +2570,8 @@ class AccountView(MainViewClass):
 
                     p_bar["value"] += 1
                     p_t.configure(
-                                  text=LANG['main.download.extract'] +
-                                  f" {division(p_bar['value'], p_bar['maximum']) * 100:.2f}%")
+                        text=LANG['main.download.extract'] +
+                             f" {division(p_bar['value'], p_bar['maximum']) * 100:.2f}%")
 
         extractor(f"{TEMP_PATH}\\main_package.zip", RUN_PATH)
         restart()
@@ -2431,7 +2612,7 @@ class AccountView(MainViewClass):
             server.connect((SERVER_HOST, ACCOUNT_PORT))
         except Exception as exception:
             exc_cont = f"{create_log_time()}"
-            LOGGER.critical(exc_cont+" [GUI] "+str(exception))
+            LOGGER.critical(exc_cont + " [GUI] " + str(exception))
             debug(f"Unable to connect the server {str(exception)}", COLORS.ERROR, "GUI")
             error = Image.open(f"{RUN_PATH}\\assets\\bitmaps\\Cross Mark.png")
             error_img = ImageTk.PhotoImage(error.resize((zoom(60), zoom(60))), master=self)
@@ -2537,20 +2718,20 @@ class SignInFrame(Frame):
         self._master = master
 
         self.Style = Style()
-        self.Style.configure("TButton", font=("Arial", "10"))
-        self.Style.configure("w.info.Link.TButton", font=("Arial", "10"),
+        self.Style.configure("TButton", font=(FONT, "10"))
+        self.Style.configure("w.info.Link.TButton", font=(FONT, "10"),
                              anchor="w", relief="flat", focusthickness=0)
-        self.Style.configure("e.info.Link.TButton", font=("Arial", "10"),
+        self.Style.configure("e.info.Link.TButton", font=(FONT, "10"),
                              anchor="e", relief="flat", focusthickness=0)
-        self.Style.configure("bold.secondary.TButton", font=("Arial", "15", "bold"))
-        self.Style.configure("error.danger.TLabel", font=("Arial", "10", "bold"))
+        self.Style.configure("bold.secondary.TButton", font=(FONT, "15", "bold"))
+        self.Style.configure("error.danger.TLabel", font=(FONT, "10", "bold"))
         self.Style.configure("secondary.TEntry", foreground="#cccccc")
-        self.Style.configure("TLabel", font=("Arial", "10"))
-        self.Style.configure("success.TCheckbutton", font=("Arial", "10"))
+        self.Style.configure("TLabel", font=(FONT, "10"))
+        self.Style.configure("success.TCheckbutton", font=(FONT, "10"))
 
-        self.mail_entry = Entry(self, style="secondary.TEntry", font=("Arial", "10"))
+        self.mail_entry = Entry(self, style="secondary.TEntry", font=(FONT, "10"))
         self.mail_tip = Label(self, text=LANG["account.signin.mail_tip"])
-        self.pass_entry = Entry(self, show="•", style="secondary.TEntry", font=("Arial", "10"))
+        self.pass_entry = Entry(self, show="•", style="secondary.TEntry", font=(FONT, "10"))
         self.pass_tip = Label(self, text=LANG["account.signin.password_tip"])
         self.remember_btn = Checkbutton(self, text=LANG["account.signin.remember_me"], variable=self._master.remember,
                                         style="success.TCheckbutton")
@@ -2678,17 +2859,17 @@ class SignUpFrame(Frame):
         self._master = master
 
         self.Style = Style()
-        self.Style.configure("TButton", font=("Arial", "10"))
-        self.Style.configure("w.info.Link.TButton", font=("Arial", "10"), anchor="w")
-        self.Style.configure("e.info.Link.TButton", font=("Arial", "10"), anchor="e")
-        self.Style.configure("TButton", font=("Arial", "15", "bold"))
+        self.Style.configure("TButton", font=(FONT, "10"))
+        self.Style.configure("w.info.Link.TButton", font=(FONT, "10"), anchor="w")
+        self.Style.configure("e.info.Link.TButton", font=(FONT, "10"), anchor="e")
+        self.Style.configure("TButton", font=(FONT, "15", "bold"))
         self.Style.configure("TEntry")
-        self.Style.configure("TLabel", font=("Arial", "10"))
-        self.Style.configure("error.danger.TLabel", font=("Arial", "10", "bold"))
+        self.Style.configure("TLabel", font=(FONT, "10"))
+        self.Style.configure("error.danger.TLabel", font=(FONT, "10", "bold"))
 
-        self.mail_entry = Entry(self, bootstyle="secondary", font=("Arial", "10"))
+        self.mail_entry = Entry(self, bootstyle="secondary", font=(FONT, "10"))
         self.mail_tip = Label(self, text=LANG["account.signup.mail_tip"])
-        self.code_entry = Entry(self, bootstyle="secondary", font=("Arial", "10"))
+        self.code_entry = Entry(self, bootstyle="secondary", font=(FONT, "10"))
         self.code_tip = Label(self, text=LANG["account.signup.invite_code"])
 
         self.error_tip = Label(self, text=LANG["account.signup.invalid_code"], style="error.danger.TLabel")
@@ -2775,14 +2956,14 @@ class MailVerifyFrame(Frame):
         self._master = master
 
         self.Style = Style()
-        self.Style.configure("TButton", font=("Arial", "10"))
-        self.Style.configure("w.info.Link.TButton", font=("Arial", "10"), anchor="w")
-        self.Style.configure("e.info.Link.TButton", font=("Arial", "10"), anchor="e")
-        self.Style.configure("TButton", font=("Arial", "15", "bold"))
+        self.Style.configure("TButton", font=(FONT, "10"))
+        self.Style.configure("w.info.Link.TButton", font=(FONT, "10"), anchor="w")
+        self.Style.configure("e.info.Link.TButton", font=(FONT, "10"), anchor="e")
+        self.Style.configure("TButton", font=(FONT, "15", "bold"))
         self.Style.configure("TEntry")
-        self.Style.configure("TLabel", font=("Arial", "10"))
+        self.Style.configure("TLabel", font=(FONT, "10"))
 
-        self.code_entry = Entry(self, bootstyle="secondary", font=("Arial", "10"))
+        self.code_entry = Entry(self, bootstyle="secondary", font=(FONT, "10"))
         self.code_tip = Label(self, text=LANG["account.signup.mail_verify.verify_code"])
 
         self.prev = Button(self, text=f'<{LANG["control.previous"]}',
@@ -2847,13 +3028,13 @@ class PasswordWriteFrame(Frame):
         self._master = master
 
         self.Style = Style()
-        self.Style.configure("TButton", font=("Arial", "10"))
-        self.Style.configure("w.info.Link.TButton", font=("Arial", "10"), anchor="w")
-        self.Style.configure("e.info.Link.TButton", font=("Arial", "10"), anchor="e")
-        self.Style.configure("TButton", font=("Arial", "15", "bold"))
-        self.Style.configure("TEntry", font=("Arial", "15"))
-        self.Style.configure("TLabel", font=("Arial", "10"))
-        self.Style.configure("danger.TLabel", font=("Arial", "10", "bold"))
+        self.Style.configure("TButton", font=(FONT, "10"))
+        self.Style.configure("w.info.Link.TButton", font=(FONT, "10"), anchor="w")
+        self.Style.configure("e.info.Link.TButton", font=(FONT, "10"), anchor="e")
+        self.Style.configure("TButton", font=(FONT, "15", "bold"))
+        self.Style.configure("TEntry", font=(FONT, "15"))
+        self.Style.configure("TLabel", font=(FONT, "10"))
+        self.Style.configure("danger.TLabel", font=(FONT, "10", "bold"))
 
         self.name_entry = Entry(self, bootstyle="secondary")
         self.name_tip = Label(self, text=LANG["account.signup.account_name"])
@@ -3045,7 +3226,7 @@ class LoadingFrame(Frame):
                     self.label.configure(image=x)
                 except Exception as exception:
                     exc_cont = f"{create_log_time()}"
-                    LOGGER.critical(exc_cont+" [GUI] "+str(exception))
+                    LOGGER.critical(exc_cont + " [GUI] " + str(exception))
                     debug(str(exception), COLORS.ERROR, "GUI")
                 if self.stopped:
                     break
@@ -3072,17 +3253,17 @@ class ServerSelection(Toplevel):
         darkWindow(self)
 
         self.Style = Style()
-        self.Style.configure("solid.secondary.TButton", font=("Arial", "10"))
-        self.Style.configure("name.light.Link.TButton", font=("Arial", "10", "bold"),
+        self.Style.configure("solid.secondary.TButton", font=(FONT, "10"))
+        self.Style.configure("name.light.Link.TButton", font=(FONT, "10", "bold"),
                              anchor="center", relief="flat", focusthickness=0)
-        self.Style.configure("ip.light.Link.TButton", font=("Arial", "10", "bold"),
+        self.Style.configure("ip.light.Link.TButton", font=(FONT, "10", "bold"),
                              anchor="w", relief="flat", focusthickness=0)
         self.Style.configure("secondary.TEntry", foreground="#cccccc")
-        self.Style.configure("TLabel", font=("Arial", "10"))
+        self.Style.configure("TLabel", font=(FONT, "10"))
 
         self.communities = Frame(self)
         self.personal = Frame(self)
-        self.direct = Entry(self, style="secondary.TEntry", font=("Arial", "10"))
+        self.direct = Entry(self, style="secondary.TEntry", font=(FONT, "10"))
         self.direct_btn = Button(self, style="solid.secondary.TButton", text=LANG["control.ok"])
 
     def closeWin(self, event=None):
@@ -3317,12 +3498,12 @@ def url_size_getter(url):
             return None
     except urllib.error.URLError as e:
         exc_cont = f"{create_log_time()}"
-        LOGGER.critical(exc_cont+" [GUI] "+str(e))
+        LOGGER.critical(exc_cont + " [GUI] " + str(e))
         debug(f"Error accessing URL: {e}", COLORS.ERROR, "GUI")
         return None
     except Exception as e:
         exc_cont = f"{create_log_time()}"
-        LOGGER.critical(exc_cont+" [GUI] "+str(e))
+        LOGGER.critical(exc_cont + " [GUI] " + str(e))
         debug(f"An error occurred: {e}", COLORS.ERROR, "GUI")
         return None
 

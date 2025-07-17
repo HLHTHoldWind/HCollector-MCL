@@ -75,6 +75,7 @@
   "setting.account.relogin_ms": "Bei Microsoft-Konto erneut anmelden",
   "setting.configure": "Einstellungen",
   "setting.configure.language": "Sprache",
+  "setting.configure.animate": "Animation",
   "setting.configure.game_path": "Spielspeicherpfad",
   "setting.configure.ram": "Zugewiesener Arbeitsspeicher",
   "setting.discord": "Unserem Discord beitreten"

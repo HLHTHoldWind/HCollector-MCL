@@ -75,6 +75,7 @@
   "setting.account.relogin_ms": "Microsoft 계정 재로그인",
   "setting.configure": "환경 설정",
   "setting.configure.language": "언어",
+  "setting.configure.animate": "생기",
   "setting.configure.game_path": "게임 저장 경로",
   "setting.configure.ram": "할당된 메모리",
   "setting.discord": "Discord 참여"

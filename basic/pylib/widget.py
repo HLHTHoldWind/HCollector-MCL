@@ -7,12 +7,36 @@ import win32api
 import pygame
 import pywinstyles
 from basic.constants import *
+from basic.movement import *
 
 # moving functions
 SAMPLE_FUNCTION = ("function definition: def", "x_start: num", "x_end: num", "y_offset: num")
 COSINE = (math.cos, math.pi, math.pi * 2, 1)
+CUBIC = (ease_in_out_cubic_scaled, 0, 1, 0)
+SQUD = (ease_out_quad, 0, 1, 0)
+STEP = (smoothstep, 0, 1, 0)
+WINDOWS10 = (windows10_cubic_bezier, 0, 1, 0)
+WINDOWS11 = (windows11_cubic_bezier, 0, 1, 0)
+WINDOWS11_BOUNCE = (windows11_bounce_bezier, 0, 1, 0)
+ELASTIC_OUT = (ease_out_elastic_gentle, 0, 1, 0)
+ELASTIC_IN_OUT = (ease_in_out_elastic, 0, 1, 0)
+BOUNCE = (ease_in_out_cubic_bounce, 0, 1, 0)
+LINEAR = (lambda x: x, 0, 1, 0)
+CANCEL_FADE = False
 
 pygame.init()
+
+M_FUNC = {
+    "COSINE": COSINE,
+    "CUBIC": CUBIC,
+    "SQUD": SQUD,
+    "STEP": STEP,
+    "WINDOWS10": WINDOWS10,
+    "WINDOWS11": WINDOWS11,
+    "WINDOWS11_BOUNCE": WINDOWS11_BOUNCE,
+    "BOUNCE": BOUNCE,
+    "LINEAR": LINEAR
+}
 
 
 # definitions
@@ -119,17 +143,19 @@ def moving(widget, x=None, y=None, width=None, height=None, delay=0.5, fps=60, s
 
     fps_delay = get_frame_rate_delay(fps)
 
+    FUNC = M_FUNC[CONFIG["CONFIG"]["animate"]]
+
     if isinstance(advance_delay, dict):
-        velocity_x = get_func_velocities(length_x, advance_delay["x"], fps_delay, COSINE)
-        velocity_y = get_func_velocities(length_y, advance_delay["y"], fps_delay, COSINE)
-        velocity_width = get_func_velocities(length_width, advance_delay["width"], fps_delay, COSINE)
-        velocity_height = get_func_velocities(length_height, advance_delay["height"], fps_delay, COSINE)
+        velocity_x = get_func_velocities(length_x, advance_delay["x"], fps_delay, FUNC)
+        velocity_y = get_func_velocities(length_y, advance_delay["y"], fps_delay, FUNC)
+        velocity_width = get_func_velocities(length_width, advance_delay["width"], fps_delay, FUNC)
+        velocity_height = get_func_velocities(length_height, advance_delay["height"], fps_delay, FUNC)
 
     else:
-        velocity_x = get_func_velocities(length_x, delay, fps_delay, COSINE)
-        velocity_y = get_func_velocities(length_y, delay, fps_delay, COSINE)
-        velocity_width = get_func_velocities(length_width, delay, fps_delay, COSINE)
-        velocity_height = get_func_velocities(length_height, delay, fps_delay, COSINE)
+        velocity_x = get_func_velocities(length_x, delay, fps_delay, FUNC)
+        velocity_y = get_func_velocities(length_y, delay, fps_delay, FUNC)
+        velocity_width = get_func_velocities(length_width, delay, fps_delay, FUNC)
+        velocity_height = get_func_velocities(length_height, delay, fps_delay, FUNC)
 
     total_frames = round(delay / fps_delay)
     start_time = time.time()
@@ -156,11 +182,20 @@ def moving(widget, x=None, y=None, width=None, height=None, delay=0.5, fps=60, s
 
 
 def fade_out(widget, light=1, during=0.5, fps=60):
+    global CANCEL_FADE
+    CANCEL_FADE = True
+
     def func(light, during, fps):
+        # step = round(light / fps / during, 4)
+        global CANCEL_FADE
+        accurate_delay(10)
+        CANCEL_FADE = False
         step = round(light / fps / during, 4)
         fps_delay = get_frame_rate_delay(fps)
         start_time = time.time()
         for f in range(fps):
+            if CANCEL_FADE:
+                break
             start = time.time()
             pywinstyles.set_opacity(widget, value=light)
             light -= step
@@ -168,16 +203,28 @@ def fade_out(widget, light=1, during=0.5, fps=60):
             end = time.time()
             if end - start <= fps_delay and f >= (end - start_time) / fps_delay:
                 accurate_delay(int(round(fps_delay - (end - start), 3) * 1000))
+            if CANCEL_FADE:
+                break
+
     threading.Thread(target=func, args=(light, during, fps)).start()
 
 
 def fade_in(widget, light=1, during=0.5, fps=60):
+    global CANCEL_FADE
+    CANCEL_FADE = True
+    pywinstyles.set_opacity(widget, value=0)
+
     def func(light, during, fps):
+        global CANCEL_FADE
+        accurate_delay(10)
+        CANCEL_FADE = False
         _light = 0
         step = round(light / fps / during, 4)
         fps_delay = get_frame_rate_delay(fps)
         start_time = time.time()
         for f in range(fps):
+            if CANCEL_FADE:
+                break
             start = time.time()
             pywinstyles.set_opacity(widget, value=_light)
             _light += step
@@ -185,6 +232,8 @@ def fade_in(widget, light=1, during=0.5, fps=60):
             end = time.time()
             if end - start <= fps_delay and f >= (end - start_time) / fps_delay:
                 accurate_delay(int(round(fps_delay - (end - start), 3) * 1000))
+            if CANCEL_FADE:
+                break
 
     threading.Thread(target=func, args=(light, during, fps)).start()
 

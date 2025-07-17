@@ -75,6 +75,7 @@
   "setting.account.relogin_ms": "重新登入 Microsoft 帳戶",
   "setting.configure": "偏好設定",
   "setting.configure.language": "語言",
+  "setting.configure.animate": "動效",
   "setting.configure.game_path": "遊戲儲存路徑",
   "setting.configure.ram": "分配記憶體",
   "setting.discord": "加入我們的 Discord"

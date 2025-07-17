@@ -75,6 +75,7 @@
   "setting.account.relogin_ms": "Reensaluti al Microsoft konto",
   "setting.configure": "Preferoj",
   "setting.configure.language": "Lingvo",
+  "setting.configure.animate": "Animacio",
   "setting.configure.game_path": "Luda stokado vojo",
   "setting.configure.ram": "Asignita memoro",
   "setting.discord": "Aliĝu al nia Discord"
